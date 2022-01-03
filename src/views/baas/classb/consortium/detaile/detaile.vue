@@ -21,7 +21,7 @@
           <div class="tit">联盟成员</div>
         </div>
         <div class="list-page-toolbar">
-          <div class="left">+ 邀请成员</div>
+          <div class="left" @click="invitShow">+ 邀请成员</div>
         </div>
         <div class="dd">
           <div class="form">
@@ -65,6 +65,38 @@
         </div>
       </div>
     </div>
+    <!-- 邀请成员 -->
+    <el-dialog title="邀请成员" :visible.sync="invitFlag" width="600px">
+      <div class="create-main">
+        <div class="alt">
+          温馨提示：邀请信息将通过系统发送给相关账户，您可在事件中心查看进度
+        </div>
+        <el-form
+          :model="invitFrom"
+          ref="invitFrom"
+          label-width="140px"
+          label-position="left"
+          :rules="rules"
+        >
+          <el-form-item label="邀请人手机号" prop="phone">
+            <el-input
+              type="text"
+              v-model="invitFrom.phone"
+              class="ipt"
+              autocomplete="off"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <div class="error" v-if="invitError">该用户需是BaaS已存在用户</div>
+        </el-form>
+      </div>
+      <div class="create-bot">
+        <el-button type="primary" @click="invitSubmit('invitFrom')"
+          >确定</el-button
+        >
+        <el-button @click="invitClose">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -77,6 +109,21 @@ export default {
       data: {},
       tableLoading: true,
       tableData: [],
+      invitFlag: false,
+      invitError: false,
+      invitFrom: {
+        phone: "",
+      },
+      rules: {
+        phone: [
+          {
+            pattern: /^[1][3,4,5,6,7,8,9][0-9]{9}$/,
+            message: `请输入正确的手机号`,
+            trigger: "blur",
+          },
+          { required: true, message: "请输入手机号", trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
@@ -99,6 +146,38 @@ export default {
   methods: {
     back() {
       this.$router.go(-1);
+    },
+    invitSubmit(form) {
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          this.$http({
+            method: "post",
+            url: quorumApi.invitConsort,
+            data: {
+              allianceId: this.id,
+              allianceType: 2,
+              userPhone: this.invitFrom.phone,
+            },
+          }).then((rel) => {
+            if (rel.code == 0) {
+              this.$message({
+                message: "邀请成功",
+                type: "success",
+              });
+              this.invitFlag = false;
+            } else {
+              this.invitError = true;
+            }
+          });
+        }
+      });
+    },
+    invitShow() {
+      this.invitFlag = true;
+    },
+    invitClose() {
+      this.invitFlag = false;
+      this.invitError = false;
     },
   },
 };
@@ -163,17 +242,34 @@ export default {
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #eb5252;
+          background: #2cb663;
         }
         .err {
           width: 9px;
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #2cb663;
+          background: #eb5252;
         }
       }
     }
   }
+}
+.create-main {
+  .alt {
+    background-color: #fcf7f1;
+    color: #f38900;
+    padding: 6px 13px;
+    margin-bottom: 30px;
+  }
+  .error {
+    padding: 0 0 20px 140px;
+  }
+}
+.create-bot {
+  border-top: 1px solid #eceff8;
+
+  text-align: right;
+  padding-top: 20px;
 }
 </style>

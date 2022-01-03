@@ -9,5 +9,9 @@ const quorumApi = {
   consortPage: "/baas/alliance/quorumAlliance/pageList", //分页获取联盟
   consortDetaile: "/baas/alliance/quorumAlliance/get", //联盟详情
   delConsort: "/baas/alliance/quorumAlliance/delete", //删除联盟
+  invitConsort: "/baas/event/eventCenter/inviteAdd2Alliance", //邀请加入联盟
+  getEvent: "/baas/event/eventCenter/pageList", //事件列表
+  inviteApprove: "/baas/event/eventCenter/inviteApprove", //邀请审批
+  quorumNode: "/baas/node/quorumNode/list", //节点列表
 };
 export default quorumApi;

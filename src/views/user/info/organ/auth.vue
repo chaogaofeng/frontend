@@ -10,17 +10,18 @@
         <el-form
           :model="ruleForm"
           ref="ruleForm"
-          label-width="100px"
+          label-width="120px"
           label-position="left"
           :rules="rules"
         >
           <el-form-item label="营业执照" prop="pic">
             <el-upload
               class="avatar-uploader"
-              action="https://jsonplaceholder.typicode.com/posts/"
+              :action="action"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload"
+              :headers="headers"
             >
               <img v-if="imageUrl" :src="imageUrl" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -63,23 +64,24 @@
         </el-form>
       </div>
       <div class="submit">
-        <el-button type="primary">提交认证</el-button>
+        <el-button type="primary" @click="submit('ruleForm')"
+          >提交认证</el-button
+        >
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import infoApi from "../api";
 export default {
   data() {
-    var validateName = (rule, value, callback) => {
-      if (value.trim() == "") {
-        callback(new Error("请输入"));
-      } else {
-        callback();
-      }
-    };
     return {
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+      action: infoApi.upload, //上传地址
+      uuid: "",
       imageUrl: "",
       ruleForm: {
         name: "", //公司名
@@ -88,15 +90,22 @@ export default {
         usercode: "", //法人身份证号
       },
       rules: {
-        name: [{ validator: validateName, trigger: "blur" }],
-        code: [{ validator: validateName, trigger: "blur" }],
-        username: [{ validator: validateName, trigger: "blur" }],
-        usercode: [{ validator: validateName, trigger: "blur" }],
+        name: [{ required: true, message: "请输入企业名称", trigger: "blur" }],
+        code: [
+          { required: true, message: "请输入社会信用代码", trigger: "blur" },
+        ],
+        username: [
+          { required: true, message: "请输入法人姓名", trigger: "blur" },
+        ],
+        usercode: [
+          { required: true, message: "请输入法人身份证号", trigger: "blur" },
+        ],
       },
     };
   },
   methods: {
     handleAvatarSuccess(res, file) {
+      this.uuid = res.data.uuid;
       this.imageUrl = URL.createObjectURL(file.raw);
     },
     beforeAvatarUpload(file) {
@@ -110,6 +119,36 @@ export default {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
       return isJPG && isLt2M;
+    },
+    submit(formName) {
+      if (!this.uuid) {
+        this.$message("请上传营业执照");
+        return;
+      }
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$http({
+            method: "post",
+            url: infoApi.organAuth,
+            data: {
+              code: this.ruleForm.code,
+              idCard: this.ruleForm.usercode,
+              name: this.ruleForm.name,
+              photo: this.uuid,
+              userName: this.ruleForm.username,
+            },
+          }).then((rel) => {
+            if (rel.code == 0) {
+              this.$message({
+                message: "提交认证成功",
+                type: "success",
+              });
+            } else {
+              this.$message(rel.msg);
+            }
+          });
+        }
+      });
     },
   },
 };

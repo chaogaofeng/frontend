@@ -43,7 +43,7 @@ const user = [
           },
           {
             path: "organ",
-            name: "organ",
+            name: "infoorgan",
             meta: {
               requireAuth: true,
             },

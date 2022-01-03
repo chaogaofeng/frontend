@@ -125,14 +125,14 @@ export default {
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #eb5252;
+          background: #2cb663;
         }
         .err {
           width: 9px;
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #2cb663;
+          background: #eb5252;
         }
       }
     }
