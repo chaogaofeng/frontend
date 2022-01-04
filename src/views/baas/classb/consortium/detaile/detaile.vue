@@ -51,9 +51,21 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="state" label="交易节点数">
+                <el-table-column label="交易节点数">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.txNodeNum">{{
+                      scope.row.txNodeNum
+                    }}</span>
+                    <span v-else> -</span>
+                  </template>
                 </el-table-column>
-                <el-table-column prop="state" label="验证节点数">
+                <el-table-column label="验证节点数">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.validateNodeNum">{{
+                      scope.row.validateNodeNum
+                    }}</span>
+                    <span v-else> -</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="createTime" label="加入日期">
                 </el-table-column>
