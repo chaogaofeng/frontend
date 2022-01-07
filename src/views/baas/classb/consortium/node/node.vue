@@ -64,8 +64,11 @@ export default {
     this.$http({
       method: "get",
       url: quorumApi.quorumNode,
+      params: {
+        allianceId: this.id,
+        allianceType: 1,
+      },
     }).then((rel) => {
-      console.log(rel);
       if (rel.code == 0) {
         this.tableData = rel.data || [];
         this.tableLoading = false;

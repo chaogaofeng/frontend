@@ -12,6 +12,6 @@ const quorumApi = {
   invitConsort: "/baas/event/eventCenter/inviteAdd2Alliance", //邀请加入联盟
   getEvent: "/baas/event/eventCenter/pageList", //事件列表
   inviteApprove: "/baas/event/eventCenter/inviteApprove", //邀请审批
-  quorumNode: "/baas/node/quorumNode/list", //节点列表
+  quorumNode: "/baas/node/chainNode/nodeList", //节点列表
 };
 export default quorumApi;
