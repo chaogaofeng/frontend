@@ -485,7 +485,7 @@ export default {
       createDialogFlag: false,
       createOrg: {
         organName: "", //组织名
-        enName: "", //英文名
+        organenName: "", //英文名
         desc: "", //备注
       },
       createForm: {
@@ -645,15 +645,15 @@ export default {
             method: "post",
             url: quorumApi.addOrg,
             data: {
-              enName: this.createOrg.enName,
+              enName: this.createOrg.organenName,
               name: this.createOrg.organName,
               note: this.createOrg.desc,
             },
           }).then((rel) => {
             if (rel.code == 0) {
               this.createDialogFlag = false;
-              this.createOrg.enName = "";
-              this.createOrg.property = "";
+              this.createOrg.organenName = "";
+              this.createOrg.organName = "";
               this.createOrg.desc = "";
               this.getOrg();
               this.$message({

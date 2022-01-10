@@ -106,7 +106,6 @@ export default {
         ];
       }
     } else {
-      console.log(high);
       this.$router.go(-1);
     }
   },
@@ -132,8 +131,11 @@ export default {
           syncMode: this.createForm.syncMode,
         },
       }).then((rel) => {
+        console.log(rel);
         if (rel.code == 0) {
           this.$router.push("/quorum/consortsuccess");
+        } else {
+          this.$message(rel.msg);
         }
       });
     },

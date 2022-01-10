@@ -44,10 +44,18 @@
                 <el-table-column prop="state" label="组织状态">
                   <template slot-scope="scope">
                     <div class="state">
-                      <span v-if="scope.row.status == 0"
-                        ><i class="success"></i>正常</span
+                      <span v-if="scope.row.status == 0">
+                        <i class="success"></i>正常</span
                       >
-                      <span v-else> ><i class="err"></i>异常</span>
+                      <span v-if="scope.row.status == 1">
+                        <i class="el-icon-loading"></i>部署中</span
+                      >
+                      <span v-if="scope.row.status == 2">
+                        <i class="success"></i>部署成功</span
+                      >
+                      <span v-if="scope.row.status == 3">
+                        <i class="err"></i>部署失败</span
+                      >
                     </div>
                   </template>
                 </el-table-column>

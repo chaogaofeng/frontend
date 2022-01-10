@@ -165,25 +165,40 @@
               <template slot-scope="scope">
                 <div class="handle">
                   <p>
-                    <span class="blue" @click="invitShow(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="invitShow(scope.row)"
                       >邀请成员</span
                     >
+                    <span v-else>邀请成员</span>
                   </p>
                   <p>
-                    <span class="blue" @click="goNode(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="goNode(scope.row)"
                       >节点管理</span
                     >
+                    <span v-else>节点管理</span>
                   </p>
                   <p>
-                    <span class="blue" @click="goContract(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="goContract(scope.row)"
                       >合约管理</span
                     >
+                    <span v-else>合约管理</span>
                   </p>
                   <p>
-                    <span>账号管理</span>
-                  </p>
-                  <p>
-                    <span class="blue" @click="del(scope.row)">退出联盟</span>
+                    <span
+                      v-if="scope.row.status != 1"
+                      class="blue"
+                      @click="del(scope.row)"
+                      >退出联盟</span
+                    >
+                    <span v-else>退出联盟</span>
                   </p>
                 </div>
               </template>
@@ -297,6 +312,7 @@ export default {
           userName: this.search,
         },
       }).then((rel) => {
+        console.log(rel);
         if (rel.code == 0) {
           this.tableData = [];
           if (rel.data.dataList.length > 0) {
@@ -307,8 +323,6 @@ export default {
             this.totalPage = null;
           }
           this.tableLoading = false;
-        } else {
-          this.$message(rel.msg);
         }
       });
     },
@@ -338,10 +352,6 @@ export default {
             this.filterOptions.unshift({
               value: "",
               label: "ALL",
-            });
-          } else {
-            this.$message({
-              message: rel.msg,
             });
           }
         }
@@ -384,8 +394,12 @@ export default {
           //退出联盟
           this.$http({
             method: "post",
-            url: `${quorumApi.delConsort}/${e.id}`,
+            url: quorumApi.outConsort,
+            params: {
+              allianceId: e.id,
+            },
           }).then((rel) => {
+            console.log(rel);
             if (rel.code == 0) {
               this.getData();
               this.$message({
