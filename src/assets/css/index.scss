@@ -1,0 +1,57 @@
+.baas {
+  min-height: 100vh;
+  .content-container {
+    font-size: 14px;
+  }
+}
+
+.tip-msg {
+  border: 1px solid #ccc !important;
+}
+
+.el-message {
+  min-width: 80px !important;
+}
+
+.cmd-btn-disabled {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: not-allowed;
+  color: #999;
+  padding: 0;
+  margin: 0 4px 0 0;
+  font-size: 12px;
+}
+
+.has-bg {
+  display: inline-block;
+  background-color: #f6f7fb;
+  width: 24px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+}
+
+.red-round {
+  color: #e02929;
+  margin-right: 6px;
+}
+
+.green-round {
+  color: #1AA034;
+  margin-right: 6px;
+}
+
+.in-progess-round {
+  color: #108CEE;
+  margin-right: 6px;
+}
+
+.show-vertical {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10px;
+}

@@ -38,7 +38,7 @@ const baas = [
             children: [
               {
                 path: "organ",
-                name: "organ",
+                name: "organList",
                 meta: {
                   requireAuth: true,
                 },
@@ -62,6 +62,98 @@ const baas = [
                 },
                 component: () =>
                   import("@/views/baas/classa/quorum/event/event"),
+              },
+            ],
+          },
+          {
+            path: "fabric",
+            name: "fabric",
+            redirect: "/baas/fabric/organizationList",
+            meta: {
+              requireAuth: true,
+            },
+            component: () => import("@/views/baas/fabricPages/fabric"),
+            children: [
+              {
+                path: "organizationList",
+                name: "fabricOrganizationList",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/organization"),
+              },
+              {
+                path: "consortiumList",
+                name: "fabricConsortiumList",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/league"),
+              },
+              {
+                path: "consortiumMg/:leagueId",
+                name: "fabricConsortiumMg",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/league/alianceManagement"),
+              },
+              {
+                path: "memberMg/:leagueId",
+                name: "fabricConsortiumMemberMg",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/league/alianceMemberManagement"),
+              },
+              {
+                path: "nodeMg/:leagueId",
+                name: "fabricNodeMg",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/league/nodeManagement"),
+              },
+              {
+                path: "channelMg/:leagueId",
+                name: "fabricChannelMg",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/league/channelManagement"),
+              },
+              {
+                path: "eventList",
+                name: "fabricEventToConsortiumList",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () =>
+                  import("@/views/baas/fabricPages/eventHubs"),
+                children: [
+                  {
+                    path: "consortium",
+                    name: "fabricConsortiumEventList",
+                    meta: {
+                      requireAuth: true,
+                    },
+                    component: () => import("@/views/baas/fabricPages/eventHubs/eventConsortiumList")
+                  },
+                  {
+                    path: "channel",
+                    name: "fabricChannelEventList",
+                    meta: {
+                      requireAuth: true,
+                    },
+                    component: () => import("@/views/baas/fabricPages/eventHubs/eventChannelList")
+                  }          
+                ]
               },
             ],
           },
@@ -167,6 +259,49 @@ const baas = [
           },
         ],
       },
+      // Fabric 路由
+      {
+        path: "/fabric/organDetail/:orgId",
+        name: "organDetail",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/organization/organDetail")
+      },
+      {
+        path: "/fabric/createConsortium",
+        name: "fabricAddConsortium",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/createLeague")
+      },
+      /* {
+        path: "baas/fabric/eventList",
+        name: "fabricEventToConsortiumList",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/eventHubs"),
+        children: [
+          {
+            path: "consortium",
+            name: "fabricConsortiumEventList",
+            meta: {
+              requireAuth: true,
+            },
+            component: () => import("@/views/baas/fabricPages/eventHubs/eventConsortiumList")
+          },
+          {
+            path: "channel",
+            name: "fabricChannelEventList",
+            meta: {
+              requireAuth: true,
+            },
+            component: () => import("@/views/baas/fabricPages/eventHubs/eventChannelList")
+          }          
+        ]
+      }, */
     ],
   },
 ];

@@ -9,6 +9,14 @@
           router
         >
           <el-menu-item index="/baas/baashome">概览</el-menu-item>
+          <el-submenu index="/baas/fabric">
+            <template slot="title">
+              <span>Fabric</span>
+            </template>
+            <el-menu-item index="/baas/fabric/organizationList">组织</el-menu-item>
+            <el-menu-item index="/baas/fabric/consortiumList">联盟</el-menu-item>
+            <el-menu-item index="/baas/fabric/eventList">事件中心</el-menu-item>
+          </el-submenu>
           <el-submenu index="/baas/quorum">
             <template slot="title">
               <span>Quorum</span>

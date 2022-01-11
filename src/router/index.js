@@ -40,9 +40,16 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "login" */ "../views/login/logout.vue"),
-  },
+  },  
   ...Baas,
   ...User,
+  {
+    path:'*',
+    meta: {
+      requireAuth: false,
+    },
+    component:()=>import(/*webpackChunkName:'orderSearch'*/'@/views/404.vue')
+  }
 ];
 
 const router = new VueRouter({

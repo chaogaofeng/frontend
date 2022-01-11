@@ -1,5 +1,5 @@
 <template>
-  <div class="bass">
+  <div class="baas">
     <Header></Header>
     <router-view></router-view>
   </div>
