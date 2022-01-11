@@ -16,7 +16,9 @@
           </p>
         </div>
         <div class="list-page-toolbar">
-          <div class="left">+ 创建JSON-RPC权限账号</div>
+          <div class="left" @click="createDialogFlag = true">
+            + 创建JSON-RPC权限账号
+          </div>
         </div>
         <div class="dd">
           <div class="form">
@@ -61,6 +63,47 @@
         </div>
       </div>
     </div>
+    <!-- 创建RPC -->
+    <el-dialog
+      title="创建JSON-RPC账号"
+      :visible.sync="createDialogFlag"
+      width="500px"
+    >
+      <div class="create-main">
+        <el-form
+          :model="createForm"
+          ref="createForm"
+          label-width="80px"
+          label-position="right"
+          :rules="rules"
+        >
+          <el-form-item label="用户名" prop="userName">
+            <el-input
+              type="text"
+              v-model="createForm.userName"
+              class="ipt"
+              autocomplete="off"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="passwords">
+            <el-input
+              type="text"
+              v-model="createForm.passwords"
+              class="ipt"
+              autocomplete="off"
+              clearable
+            ></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="create-bot">
+        <el-button type="primary" @click="createSubmit('createForm')"
+          >确定</el-button
+        >
+        <el-button @click="createClose">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -68,11 +111,33 @@
 import quorumApi from "../../../classa/quorum/api";
 export default {
   data() {
+    var validateName = (rule, value, callback) => {
+      // if (value === "") {
+      //   callback(new Error("请输入密码"));
+      // } else {
+      //   if (this.editForm.newpass !== "") {
+      //     this.$refs.editForm.validateField("newpassTwo");
+      //   }
+      //   callback();
+      // }
+    };
     return {
       id: "",
       data: {},
       tableLoading: true,
       tableData: [],
+      createForm: {
+        userName: "",
+        passwords: "",
+      },
+      createDialogFlag: false,
+      rules: {
+        userName: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+          { validator: validateName, trigger: "blur" },
+        ],
+        passwords: [{ required: true, trigger: "blur" }],
+      },
     };
   },
   created() {
@@ -91,8 +156,16 @@ export default {
     });
   },
   methods: {
-    back() {
-      this.$router.go(-1);
+    createSubmit(form) {
+      this.createDialogFlag = false;
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          console.log(1);
+        }
+      });
+    },
+    createClose() {
+      this.createDialogFlag = false;
     },
   },
 };
@@ -157,17 +230,22 @@ export default {
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #eb5252;
+          background: #2cb663;
         }
         .err {
           width: 9px;
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #2cb663;
+          background: #eb5252;
         }
       }
     }
   }
+}
+.create-bot {
+  border-top: 1px solid #eceff8;
+  text-align: right;
+  padding-top: 20px;
 }
 </style>

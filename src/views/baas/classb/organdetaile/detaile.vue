@@ -38,11 +38,24 @@
                     }"
                     style="width: 100%; font-size: 12px"
                   >
-                    <el-table-column prop="consName" label="联盟名称">
+                    <el-table-column prop="name" label="联盟名称">
                     </el-table-column>
                     <el-table-column prop="enName" label="英文名">
                     </el-table-column>
-                    <el-table-column prop="state" label="联盟状态">
+                    <el-table-column label="联盟状态">
+                      <template slot-scope="scope">
+                        <div class="state">
+                          <span v-if="scope.row.status == 1"
+                            ><i class="el-icon-loading"></i>部署中</span
+                          >
+                          <span v-if="scope.row.status == 2"
+                            ><i class="success"></i>部署成功</span
+                          >
+                          <span v-if="scope.row.status == 3"
+                            ><i class="err"></i>部署失败</span
+                          >
+                        </div>
+                      </template>
                     </el-table-column>
                   </el-table>
                 </template>
@@ -74,7 +87,10 @@ export default {
     }).then((rel) => {
       console.log(rel);
       if (rel.code == 0) {
-        this.data = rel.data;
+        this.data = rel.data.org;
+        if (rel.data.alliance) {
+          this.tableData.push(rel.data.alliance);
+        }
         this.tableLoading = false;
       } else {
         this.$message(rel.msg);
@@ -122,6 +138,27 @@ export default {
       }
       &:hover {
         background: #d2ecfd;
+      }
+    }
+  }
+  .form {
+    .state {
+      i {
+        margin-right: 10px;
+      }
+      .success {
+        width: 9px;
+        height: 9px;
+        display: inline-block;
+        border-radius: 50%;
+        background: #2cb663;
+      }
+      .err {
+        width: 9px;
+        height: 9px;
+        display: inline-block;
+        border-radius: 50%;
+        background: #eb5252;
       }
     }
   }

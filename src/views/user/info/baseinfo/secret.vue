@@ -99,6 +99,7 @@
               :action="action"
               :multiple="false"
               :limit="1"
+              :headers="headers"
               :on-success="uploadSuccess"
             >
               <div class="uploadBtn">
@@ -151,6 +152,9 @@ export default {
       },
       createRadio: "1",
       action: controlApi.upload, //上传地址
+      headers: {
+        token: localStorage.getItem("token"),
+      },
       uuid: "", //文件id
     };
   },

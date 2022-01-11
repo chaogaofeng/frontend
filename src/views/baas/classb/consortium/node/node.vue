@@ -21,17 +21,17 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="orgName" label="节点ID/节点类型">
+                <el-table-column prop="nodeId" label="节点ID/节点类型">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="创建时间">
+                <el-table-column prop="createTime" label="创建时间">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="JSON RPC">
+                <el-table-column prop="jsonRpc" label="JSON RPC">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="CPU使用率">
+                <el-table-column prop="cpu" label="CPU使用率">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="内存使用率">
+                <el-table-column prop="memory" label="内存使用率">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="储存空间">
+                <el-table-column prop="storage" label="储存空间">
                 </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
@@ -55,7 +55,6 @@ export default {
   data() {
     return {
       id: "",
-      data: {},
       tableLoading: true,
       tableData: [],
     };
@@ -64,11 +63,14 @@ export default {
     this.id = this.$route.query.id;
     this.$http({
       method: "get",
-      url: `${quorumApi.consortDetaile}/${this.id}`,
+      url: quorumApi.quorumNode,
+      params: {
+        allianceId: this.id,
+        allianceType: 1,
+      },
     }).then((rel) => {
       if (rel.code == 0) {
-        this.data = rel.data.alliance;
-        this.tableData = this.data.orgList || [];
+        this.tableData = rel.data || [];
         this.tableLoading = false;
       } else {
         this.$message(rel.msg);
@@ -125,14 +127,14 @@ export default {
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #eb5252;
+          background: #2cb663;
         }
         .err {
           width: 9px;
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #2cb663;
+          background: #eb5252;
         }
       }
     }

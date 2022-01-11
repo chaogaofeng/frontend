@@ -165,25 +165,40 @@
               <template slot-scope="scope">
                 <div class="handle">
                   <p>
-                    <span class="blue" @click="invite(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="invitShow(scope.row)"
                       >邀请成员</span
                     >
+                    <span v-else>邀请成员</span>
                   </p>
                   <p>
-                    <span class="blue" @click="goNode(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="goNode(scope.row)"
                       >节点管理</span
                     >
+                    <span v-else>节点管理</span>
                   </p>
                   <p>
-                    <span class="blue" @click="goContract(scope.row)"
+                    <span
+                      v-if="scope.row.status == 2"
+                      class="blue"
+                      @click="goContract(scope.row)"
                       >合约管理</span
                     >
+                    <span v-else>合约管理</span>
                   </p>
                   <p>
-                    <span>账号管理</span>
-                  </p>
-                  <p>
-                    <span class="blue" @click="del(scope.row)">退出联盟</span>
+                    <span
+                      v-if="scope.row.status != 1"
+                      class="blue"
+                      @click="del(scope.row)"
+                      >退出联盟</span
+                    >
+                    <span v-else>退出联盟</span>
                   </p>
                 </div>
               </template>
@@ -202,6 +217,38 @@
         </el-pagination>
       </div>
     </div>
+    <!-- 邀请成员 -->
+    <el-dialog title="邀请成员" :visible.sync="invitFlag" width="600px">
+      <div class="create-main">
+        <div class="alt">
+          温馨提示：邀请信息将通过系统发送给相关账户，您可在事件中心查看进度
+        </div>
+        <el-form
+          :model="invitFrom"
+          ref="invitFrom"
+          label-width="140px"
+          label-position="left"
+          :rules="rules"
+        >
+          <el-form-item label="邀请人手机号" prop="phone">
+            <el-input
+              type="text"
+              v-model="invitFrom.phone"
+              class="ipt"
+              autocomplete="off"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <div class="error" v-if="invitError">该用户需是BaaS已存在用户</div>
+        </el-form>
+      </div>
+      <div class="create-bot">
+        <el-button type="primary" @click="invitSubmit('invitFrom')"
+          >确定</el-button
+        >
+        <el-button @click="invitClose">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -218,6 +265,22 @@ export default {
       pageNo: 1, //当前页数
       pageSize: 10, //每页条数
       totalPage: null, //总页数
+      invitId: "",
+      invitFlag: false,
+      invitError: false,
+      invitFrom: {
+        phone: "",
+      },
+      rules: {
+        phone: [
+          {
+            pattern: /^[1][3,4,5,6,7,8,9][0-9]{9}$/,
+            message: `请输入正确的手机号`,
+            trigger: "blur",
+          },
+          { required: true, message: "请输入手机号", trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
@@ -249,6 +312,7 @@ export default {
           userName: this.search,
         },
       }).then((rel) => {
+        console.log(rel);
         if (rel.code == 0) {
           this.tableData = [];
           if (rel.data.dataList.length > 0) {
@@ -259,8 +323,6 @@ export default {
             this.totalPage = null;
           }
           this.tableLoading = false;
-        } else {
-          this.$message(rel.msg);
         }
       });
     },
@@ -291,10 +353,6 @@ export default {
               value: "",
               label: "ALL",
             });
-          } else {
-            this.$message({
-              message: rel.msg,
-            });
           }
         }
       });
@@ -310,7 +368,6 @@ export default {
       this.pageSize = 10;
       this.totalPage = null;
     },
-    invite() {},
     goNode(e) {
       this.$router.push({ name: "consortnode", query: { id: e.id } });
     },
@@ -337,8 +394,12 @@ export default {
           //退出联盟
           this.$http({
             method: "post",
-            url: `${quorumApi.delConsort}/${e.id}`,
+            url: quorumApi.outConsort,
+            params: {
+              allianceId: e.id,
+            },
           }).then((rel) => {
+            console.log(rel);
             if (rel.code == 0) {
               this.getData();
               this.$message({
@@ -351,6 +412,39 @@ export default {
           });
         })
         .catch(() => {});
+    },
+    invitSubmit(form) {
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          this.$http({
+            method: "post",
+            url: quorumApi.invitConsort,
+            data: {
+              allianceId: this.invitId,
+              allianceType: 2,
+              userPhone: this.invitFrom.phone,
+            },
+          }).then((rel) => {
+            if (rel.code == 0) {
+              this.$message({
+                message: "邀请成功",
+                type: "success",
+              });
+              this.invitFlag = false;
+            } else {
+              this.invitError = true;
+            }
+          });
+        }
+      });
+    },
+    invitShow(e) {
+      this.invitId = e.id;
+      this.invitFlag = true;
+    },
+    invitClose() {
+      this.invitFlag = false;
+      this.invitError = false;
     },
   },
 };
@@ -496,14 +590,14 @@ export default {
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #eb5252;
+          background: #2cb663;
         }
         .err {
           width: 9px;
           height: 9px;
           display: inline-block;
           border-radius: 50%;
-          background: #2cb663;
+          background: #eb5252;
         }
       }
     }
@@ -609,5 +703,22 @@ export default {
   .blue {
     color: #108cee;
   }
+}
+.create-main {
+  .alt {
+    background-color: #fcf7f1;
+    color: #f38900;
+    padding: 6px 13px;
+    margin-bottom: 30px;
+  }
+  .error {
+    padding: 0 0 20px 140px;
+  }
+}
+.create-bot {
+  border-top: 1px solid #eceff8;
+
+  text-align: right;
+  padding-top: 20px;
 }
 </style>

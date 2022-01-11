@@ -69,7 +69,7 @@
       width="820px"
       @close="editCloseFun"
     >
-      <div class="transfer-tit">授权用户:{{ activeRule.roleName }}</div>
+      <div class="transfer-tit">授权角色:{{ activeRule.roleName }}</div>
       <Transfer
         ref="trans"
         v-if="transferData != null"

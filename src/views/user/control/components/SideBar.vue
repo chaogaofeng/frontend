@@ -76,6 +76,7 @@ export default {
         }
         .el-menu-item {
           font-size: 12px;
+          border-left: 3px solid #fff;
         }
         ::v-deep .el-submenu__title {
           font-size: 12px;

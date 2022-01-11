@@ -22,6 +22,7 @@
                     <div class="ipt">
                       <el-form-item prop="name">
                         <el-input
+                          :disabled="readonly"
                           type="text"
                           v-model="createForm.name"
                           class="ipt"
@@ -43,6 +44,7 @@
                     <div class="ipt">
                       <el-form-item prop="enName">
                         <el-input
+                          :disabled="readonly"
                           type="text"
                           v-model="createForm.enName"
                           class="ipt"
@@ -60,13 +62,17 @@
                 <div class="row">
                   <div class="label">联盟描述：</div>
                   <div class="con">
-                    <div class="ipt textarea">
-                      <textarea
-                        v-model="createForm.desc"
-                        maxlength="200"
+                    <div class="ipt">
+                      <el-input
+                        type="textarea"
+                        :disabled="readonly"
+                        :autosize="{ minRows: 2, maxRows: 4 }"
                         placeholder="请输入联盟描述"
-                      ></textarea>
-                      <span>{{ descNum }}/200</span>
+                        v-model="createForm.desc"
+                        show-word-limit
+                        maxlength="200"
+                      >
+                      </el-input>
                     </div>
                   </div>
                 </div>
@@ -230,7 +236,7 @@
                   <div class="label imp">可用区：</div>
                   <div class="con">
                     <div class="ipt">
-                      <el-checkbox disabled v-model="areaFlag"
+                      <el-checkbox :disabled="readonly" v-model="areaFlag"
                         >可用集群</el-checkbox
                       >
                       <el-popover
@@ -257,7 +263,7 @@
                         v-model="ipv6"
                         active-color="#108cee"
                         inactive-color="#ea2e2e"
-                        disabled
+                        :disabled="readonly"
                       >
                       </el-switch>
                       <el-popover
@@ -474,11 +480,12 @@ export default {
       }
     };
     return {
+      readonly: false, //是否可配置
       advanced: false, //高级配置开关
       createDialogFlag: false,
       createOrg: {
         organName: "", //组织名
-        enName: "", //英文名
+        organenName: "", //英文名
         desc: "", //备注
       },
       createForm: {
@@ -541,7 +548,6 @@ export default {
           label: "IBFT",
         },
       ], //共识机制
-      descNum: 0, //当前描述字符数
       areaFlag: true, //可用区开关
       ipv6: true, //ipv6
       high: "0", //是否豪华配置
@@ -549,16 +555,14 @@ export default {
     };
   },
   created() {
+    let type = this.$route.query.type;
+    if (type == "join") {
+      this.readonly = true;
+    } else {
+      this.readonly = false;
+    }
     this.getOrg();
     this.paySwitch();
-  },
-  watch: {
-    createForm: {
-      handler: function (val) {
-        this.descNum = val.desc.length;
-      },
-      deep: true,
-    },
   },
   computed: {
     ...mapState(["authStatus"]),
@@ -641,15 +645,15 @@ export default {
             method: "post",
             url: quorumApi.addOrg,
             data: {
-              enName: this.createOrg.enName,
+              enName: this.createOrg.organenName,
               name: this.createOrg.organName,
               note: this.createOrg.desc,
             },
           }).then((rel) => {
             if (rel.code == 0) {
               this.createDialogFlag = false;
-              this.createOrg.enName = "";
-              this.createOrg.property = "";
+              this.createOrg.organenName = "";
+              this.createOrg.organName = "";
               this.createOrg.desc = "";
               this.getOrg();
               this.$message({

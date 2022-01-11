@@ -39,7 +39,7 @@
           </el-descriptions>
           <div class="p">
             企业认证与机构绑定，查看请前往
-            <router-link :to="{ name: 'organ' }">我的机构</router-link>
+            <router-link :to="{ name: 'infoorgan' }">我的机构</router-link>
           </div>
         </div>
       </div>
@@ -176,6 +176,7 @@ export default {
         url: infoApi.userInfo,
         method: "get",
       }).then((rel) => {
+        console.log(rel);
         if (rel.code == 0) {
           this.userInfo = rel.data;
           this.phone =
