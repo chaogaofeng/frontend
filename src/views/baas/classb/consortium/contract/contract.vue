@@ -5,7 +5,7 @@
         <div class="list-page-toolbar">
           <div class="menu">
             <span :class="{ act: menu == 1 }" @click="chooseMenu(1)"
-              >共有合约</span
+              >公有合约</span
             >
             <span :class="{ act: menu == 2 }" @click="chooseMenu(2)"
               >私有合约</span
@@ -14,16 +14,14 @@
               >基础合约</span
             >
           </div>
-          <router-link tag="div" to="/quorum/consortium/node" class="left"
-            >合约部署</router-link
-          >
+          <div class="left" @click="bushu">合约部署</div>
         </div>
         <div class="dd padding" v-if="menu == 1">
           <div class="form">
             <template>
               <el-table
                 v-loading="tableLoading"
-                :data="tableData"
+                :data="tableData1"
                 :header-cell-style="{
                   background: '#F6F7FB',
                   color: 'rgba(0, 0, 0, 0.85)',
@@ -32,11 +30,10 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="orgName" label="合约名称">
+                <el-table-column prop="name" label="合约名称">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="状态">
-                </el-table-column>
-                <el-table-column prop="orgEnName" label="部署时间">
+                <el-table-column prop="status" label="状态"> </el-table-column>
+                <el-table-column prop="createTime" label="部署时间">
                 </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
@@ -53,7 +50,7 @@
             <template>
               <el-table
                 v-loading="tableLoading"
-                :data="tableData"
+                :data="tableData2"
                 :header-cell-style="{
                   background: '#F6F7FB',
                   color: 'rgba(0, 0, 0, 0.85)',
@@ -62,11 +59,10 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="orgName" label="合约名称">
+                <el-table-column prop="name" label="合约名称">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="状态">
-                </el-table-column>
-                <el-table-column prop="orgEnName" label="部署时间">
+                <el-table-column prop="status" label="状态"> </el-table-column>
+                <el-table-column prop="createTime" label="部署时间">
                 </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
@@ -84,7 +80,7 @@
             <template>
               <el-table
                 v-loading="tableLoading"
-                :data="tableData"
+                :data="tableData3"
                 :header-cell-style="{
                   background: '#F6F7FB',
                   color: 'rgba(0, 0, 0, 0.85)',
@@ -93,11 +89,11 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="orgName" label="合约名称">
+                <el-table-column prop="name" label="合约名称">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="合约简介">
+                <el-table-column prop="note" label="合约简介">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="合约全局ID">
+                <el-table-column prop="globalId" label="合约全局ID">
                 </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
@@ -121,18 +117,24 @@ export default {
       id: "",
       menu: 1,
       tableLoading: true,
-      tableData: [],
+      tableData1: [],
+      tableData2: [],
+      tableData3: [],
     };
   },
   created() {
     this.id = this.$route.query.id;
+    //公有合约
     this.$http({
       method: "get",
-      url: `${quorumApi.consortDetaile}/${this.id}`,
+      url: quorumApi.contractDeploy,
+      params: {
+        type: this.menu,
+      },
     }).then((rel) => {
+      console.log(rel);
       if (rel.code == 0) {
-        this.data = rel.data.alliance;
-        this.tableData = this.data.orgList || [];
+        this.tableData1 = rel.data || [];
         this.tableLoading = false;
       } else {
         this.$message(rel.msg);
@@ -145,6 +147,61 @@ export default {
     },
     chooseMenu(type) {
       this.menu = type;
+      this.tableLoading = true;
+      if (this.menu == 1) {
+        //公有合约
+        this.$http({
+          method: "get",
+          url: quorumApi.contractDeploy,
+          params: {
+            type: this.menu,
+          },
+        }).then((rel) => {
+          console.log(rel);
+          if (rel.code == 0) {
+            this.tableData1 = rel.data || [];
+            this.tableLoading = false;
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      }
+      if (this.menu == 2) {
+        //私有合约
+        this.$http({
+          method: "get",
+          url: quorumApi.contractDeploy,
+          params: {
+            type: this.menu,
+          },
+        }).then((rel) => {
+          console.log(rel);
+          if (rel.code == 0) {
+            this.tableData2 = rel.data || [];
+            this.tableLoading = false;
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      }
+      if (this.menu == 3) {
+        //基础合约
+        this.$http({
+          method: "get",
+          url: quorumApi.contractTemp,
+        }).then((rel) => {
+          console.log(rel);
+          if (rel.code == 0) {
+            this.tableData3 = rel.data || [];
+            this.tableLoading = false;
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      }
+    },
+    bushu() {
+      // window.open("http://www.jb51.net");
     },
   },
 };

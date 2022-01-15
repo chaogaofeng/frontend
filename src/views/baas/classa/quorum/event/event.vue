@@ -39,6 +39,11 @@
                 <el-table-column prop="allianceName" label="相关联盟">
                 </el-table-column>
                 <el-table-column prop="status" label="事件状态">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.status == 1">审批中</span>
+                    <span v-else-if="scope.row.status == 2">已完成</span>
+                    <span v-else>-</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="beginTime" label="发起时间">
                 </el-table-column>
@@ -53,11 +58,6 @@
                 <el-table-column label="操作">
                   <template slot-scope="scope">
                     <div class="handle">
-                      <p>
-                        <span class="blue" @click="join(scope.row)"
-                          >确认加入联盟</span
-                        >
-                      </p>
                       <p>
                         <span class="blue" @click="look(scope.row)"
                           >查看审批流</span
@@ -103,6 +103,11 @@
                 <el-table-column prop="allianceName" label="相关联盟">
                 </el-table-column>
                 <el-table-column prop="status" label="事件状态">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.status == 1">审批中</span>
+                    <span v-else-if="scope.row.status == 2">已完成</span>
+                    <span v-else>-</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="beginTime" label="发起时间">
                 </el-table-column>
@@ -116,22 +121,37 @@
                 </el-table-column>
                 <el-table-column label="操作">
                   <template slot-scope="scope">
-                    <div class="handle">
+                    <div class="handle" v-if="scope.row.status == 1">
                       <p>
-                        <span class="blue" @click="approve(scope.row, 1)"
-                          >通过申请</span
+                        <span class="blue" @click="applyApprove(scope.row, 1)"
+                          >接受邀请</span
                         >
                       </p>
                       <p>
-                        <span class="blue" @click="approve(scope.row, 2)"
-                          >驳回申请</span
+                        <span class="blue" @click="applyApprove(scope.row, 2)"
+                          >拒绝邀请</span
                         >
                       </p>
-                      <p>
-                        <span class="blue" @click="look(scope.row)"
-                          >查看审批流</span
+                    </div>
+                    <div class="handle" v-else>
+                      <div v-if="scope.row.canAdd2Alliance == true">
+                        <span class="blue" @click="join(scope.row)"
+                          >加入联盟</span
                         >
-                      </p>
+                      </div>
+                      <div v-else>
+                        <p>
+                          <span class="blue" @click="approve(scope.row, 1)"
+                            >通过申请</span
+                          >
+                        </p>
+
+                        <p>
+                          <span class="blue" @click="approve(scope.row, 2)"
+                            >驳回申请</span
+                          >
+                        </p>
+                      </div>
                     </div>
                   </template>
                 </el-table-column>
@@ -150,7 +170,6 @@
           </div>
         </div>
         <div class="box" v-show="menu == 3">
-          <div class="tit">申请事件</div>
           <div class="form">
             <template>
               <el-table
@@ -174,6 +193,16 @@
               </el-table>
             </template>
           </div>
+          <div class="pagination" v-if="totalPage3 != null">
+            <el-pagination
+              :page-size="pageSize"
+              :page-count="totalPage3"
+              background
+              @current-change="pageChange3"
+              layout="prev, pager, next"
+            >
+            </el-pagination>
+          </div>
         </div>
       </div>
     </div>
@@ -188,7 +217,10 @@ export default {
       tableLoading1: true,
       tableLoading2: true,
       tableLoading3: true,
-      menu: 1, //1 ：普通事件 2：通知
+      menu: 1,
+      eventType: 1, // 1：申请事件 2：审批事件
+      status: 1, //事件状态 1：审批中 2：已完成
+      subType: 1, //子类别 1 ：普通事件 2：通知
       pageNo1: 1, //当前页数
       pageNo2: 1, //当前页数
       pageNo3: 1, //当前页数
@@ -202,11 +234,28 @@ export default {
     };
   },
   created() {
-    this.getData(1);
-    this.getData(2);
+    this.getData(1, this.status, this.subType);
+    this.getData(2, this.status, this.subType);
   },
   methods: {
     approve(e, type) {
+      this.$http({
+        method: "post",
+        url: quorumApi.applyApprove,
+        data: {
+          eventId: e.id,
+          type: type,
+        },
+      }).then((rel) => {
+        if (rel.code == 0) {
+          this.getData(1, this.status, this.subType);
+          this.getData(2, this.status, this.subType);
+        } else {
+          this.$message(rel.msg);
+        }
+      });
+    },
+    applyApprove(e, type) {
       this.$http({
         method: "post",
         url: quorumApi.inviteApprove,
@@ -216,88 +265,96 @@ export default {
         },
       }).then((rel) => {
         if (rel.code == 0) {
-          this.getData(this.menu);
-          this.$message({
-            message: "审批成功",
-            type: "success",
-          });
+          this.getData(1, this.status, this.subType);
+          this.getData(2, this.status, this.subType);
         } else {
           this.$message(rel.msg);
         }
       });
     },
-    look(e) {},
-    join() {
-      this.$router.push({ name: "creatconsortium", query: { type: "join" } });
+    look(e) {
+      console.log(e);
+    },
+    join(e) {
+      this.$router.push({
+        name: "creatconsortium",
+        query: { type: "join", allianceId: e.allianceId },
+      });
     },
     checkMenu(type) {
       this.menu = type;
+      if (type == 1) {
+        this.status = 1;
+        this.subType = 1;
+        this.getData(1, this.status, this.subType);
+        this.getData(2, this.status, this.subType);
+      }
+      if (type == 2) {
+        this.status = 2;
+        this.subType = 1;
+        this.getData(1, this.status, this.subType);
+        this.getData(2, this.status, this.subType);
+      }
       if (type == 3) {
-        this.getData(this.menu);
-      } else {
-        this.getData(1);
-        this.getData(2);
+        this.status = 1;
+        this.subType = 2;
+        this.getData(1, this.status, this.subType);
       }
     },
     pageChange1(num) {
       this.pageNo1 = num;
-      this.getData(1);
+      this.getData(1, this.status, this.subType);
     },
     pageChange2(num) {
       this.pageNo2 = num;
-      this.getData(2);
+      this.getData(2, this.status, this.subType);
+    },
+    pageChange3(num) {
+      this.pageNo3 = num;
+      this.getData(1, this.status, this.subType);
     },
     refresh() {
       this.menu = 1;
       this.pageNo1 = 1;
       this.pageNo2 = 1;
       this.pageNo3 = 1;
+      this.eventType = 1;
+      this.status = 1;
+      this.subType = 1;
       this.totalPage1 = null;
       this.totalPage2 = null;
       this.totalPage3 = null;
-      this.getData(1);
-      this.getData(2);
+      this.getData(1, this.status, this.subType);
+      this.getData(2, this.status, this.subType);
     },
-    getData(type) {
+    getData(eventType, status, subType) {
       let pageNo = "";
-      let subType = "";
-      let eventType = "";
-      switch (type) {
-        case 1:
-          pageNo = this.pageNo1;
-          subType = 1;
-          eventType = 1;
-          break;
-        case 2:
-          pageNo = this.pageNo2;
-          subType = 2;
-          eventType = 1;
-          break;
-        case 3:
-          pageNo = this.pageNo3;
-          eventType = 2;
-          subType = 3;
-          break;
-
-        default:
-          break;
+      if (subType == 1 && eventType == 1) {
+        pageNo = this.pageNo1;
       }
+      if (subType == 1 && eventType == 2) {
+        pageNo = this.pageNo2;
+      }
+      if (subType == 2) {
+        pageNo = this.pageNo3;
+      }
+
       this.$http({
         method: "get",
         url: quorumApi.getEvent,
         params: {
           pageNo: pageNo,
           pageSize: this.pageSize,
-          status: this.menu,
+          status: status,
           subType: subType,
           allianceType: 2,
-          eventType: eventType, //1：申请事件 2：审批事件
+          eventType: eventType,
           type: 1,
         },
       }).then((rel) => {
         console.log(rel);
         if (rel.code == 0) {
-          if (type == 1) {
+          if (subType == 1 && eventType == 1) {
             this.applyTable = [];
             if (rel.data.dataList.length > 0) {
               this.applyTable = rel.data.dataList || [];
@@ -306,7 +363,9 @@ export default {
               this.totalPage1 = null;
             }
             this.tableLoading1 = false;
-          } else if (type == 2) {
+          }
+
+          if (subType == 1 && eventType == 2) {
             this.eventTable = [];
             if (rel.data.dataList.length > 0) {
               this.eventTable = rel.data.dataList || [];
@@ -315,7 +374,8 @@ export default {
               this.totalPage2 = null;
             }
             this.tableLoading2 = false;
-          } else {
+          }
+          if (subType == 2) {
             this.messageTabale = [];
             if (rel.data.dataList.length > 0) {
               this.messageTabale = rel.data.dataList || [];

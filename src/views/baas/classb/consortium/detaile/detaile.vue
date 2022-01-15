@@ -179,6 +179,7 @@ export default {
               userPhone: this.invitFrom.phone,
             },
           }).then((rel) => {
+            console.log(rel);
             if (rel.code == 0) {
               this.$message({
                 message: "邀请成功",

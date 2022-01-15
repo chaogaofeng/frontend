@@ -140,7 +140,7 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="enName" label="联盟域名"> </el-table-column>
+            <el-table-column prop="enName" label="文案"> </el-table-column>
             <el-table-column prop="note" label="联盟描述"> </el-table-column>
             <el-table-column prop="orgNames" label="联盟成员">
             </el-table-column>
@@ -286,6 +286,9 @@ export default {
   created() {
     //获取联盟列表
     this.getData();
+    setInterval(() => {
+      this.getData();
+    }, 30000);
     //获取组织
     this.getOrg();
   },

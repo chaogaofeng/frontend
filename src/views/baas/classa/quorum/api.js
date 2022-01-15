@@ -12,6 +12,10 @@ const quorumApi = {
   invitConsort: "/baas/event/eventCenter/inviteAdd2Alliance", //邀请加入联盟
   getEvent: "/baas/event/eventCenter/pageList", //事件列表
   inviteApprove: "/baas/event/eventCenter/inviteApprove", //邀请审批
+  applyApprove: "/baas/event/eventCenter/applyApprove", //接受审批
   quorumNode: "/baas/node/chainNode/nodeList", //节点列表
+  contractTemp: "/baas/temp/contractTemp/list", //合约模板列表
+  contractDeploy: "/baas/deploy/contractDeploy/list", //已部署的合约列表
+  contractDeployDetaile: "/baas/deploy/contractDeploy/get", //已部署的合约详情
 };
 export default quorumApi;

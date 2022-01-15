@@ -442,15 +442,17 @@ export default {
         callback();
       } else {
         this.err.name = false;
+        callback(new Error(" "));
       }
     };
     var validateName1 = (rule, value, callback) => {
-      let reg = value.length == 1 ? /[a-z]/ : /^[a-z][a-z0-9-]/;
+      let reg = value.length == 1 ? /[a-z]/ : /^[a-z][a-z0-9-]+$/;
       if (reg.test(value) && value.length >= 1 && value.length <= 16) {
         this.err.enName = true;
         callback();
       } else {
         this.err.enName = false;
+        callback(new Error(" "));
       }
     };
     var organName = (rule, value, callback) => {
@@ -480,6 +482,7 @@ export default {
       }
     };
     return {
+      allianceId: "", //联盟id
       readonly: false, //是否可配置
       advanced: false, //高级配置开关
       createDialogFlag: false,
@@ -556,8 +559,24 @@ export default {
   },
   created() {
     let type = this.$route.query.type;
+    let allianceId = this.$route.query.allianceId;
     if (type == "join") {
+      this.allianceId = allianceId;
       this.readonly = true;
+      this.$http({
+        method: "get",
+        url: `${quorumApi.consortDetaile}/${this.allianceId}`,
+      }).then((rel) => {
+        console.log(rel);
+        if (rel.code == 0) {
+          this.data = rel.data.alliance;
+          this.tableData = rel.data.orgList || [];
+          console.log(this.tableData);
+          this.tableLoading = false;
+        } else {
+          this.$message(rel.msg);
+        }
+      });
     } else {
       this.readonly = false;
     }
@@ -631,8 +650,9 @@ export default {
               };
             });
           } else {
-            this.$message({
-              message: rel.msg,
+            this.organs.push({
+              value: "",
+              label: "请选择",
             });
           }
         }
@@ -670,13 +690,16 @@ export default {
       });
     },
     submit(form) {
-      console.log(this.createForm);
       this.$refs[form].validate((valid) => {
         if (valid) {
-          this.$router.push({
-            name: "consortorder",
-            params: { high: this.high, createForm: this.createForm },
-          });
+          if (this.createForm.organValue == "") {
+            this.$message("请选择组织");
+          } else {
+            this.$router.push({
+              name: "consortorder",
+              params: { high: this.high, createForm: this.createForm },
+            });
+          }
         }
       });
     },

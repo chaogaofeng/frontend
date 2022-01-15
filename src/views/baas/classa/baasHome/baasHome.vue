@@ -14,8 +14,10 @@
             <span class="arrowRight">Step 1：选择恰当的区块链框架</span>
             <div class="step-content">
               <div class="links">
-                <a href="https://www.baidu.com">企业级联盟链 Fabric</a
-                ><a href="https://www.baidu.com">企业级金融联盟链 Quorum</a>
+                <a href="https://www.baidu.com">企业级联盟链 Fabric</a>
+                <router-link to="/baas/quorum/consortium"
+                  >企业级金融联盟链 Quorum</router-link
+                >
               </div>
               <div class="links">
                 <a href="https://www.baidu.com">百度超级链 XuperChain</a

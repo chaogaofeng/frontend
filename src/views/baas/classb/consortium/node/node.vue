@@ -28,16 +28,60 @@
                 <el-table-column prop="jsonRpc" label="JSON RPC">
                 </el-table-column>
                 <el-table-column prop="cpu" label="CPU使用率">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.cpu">{{ scope.row.cpu }}</span>
+                    <span v-else>-</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="memory" label="内存使用率">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.memory">{{ scope.row.memory }}</span>
+                    <span v-else>-</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="storage" label="储存空间">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.storage">{{
+                      scope.row.storage
+                    }}</span>
+                    <span v-else>-</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="phase" label="部署状态">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.phase">{{ scope.row.phase }}</span>
+                    <span v-else>-</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
-                    <p><a href="#">智能合约编辑器</a></p>
-                    <p><a href="#">区块链浏览器</a></p>
-                    <p><a href="#">节点控制台</a></p>
+                    <p>
+                      <a
+                        v-if="scope.row.phase == 'Running'"
+                        href="#"
+                        target="_blank"
+                        >智能合约编辑器</a
+                      >
+                      <span v-else>智能合约编辑器</span>
+                    </p>
+                    <p>
+                      <a
+                        v-if="scope.row.phase == 'Running'"
+                        target="_blank"
+                        :href="scope.row.browserUrl"
+                        >区块链浏览器</a
+                      >
+                      <span v-else>区块链浏览器</span>
+                    </p>
+                    <p>
+                      <a
+                        v-if="scope.row.phase == 'Running'"
+                        href="#"
+                        target="_blank"
+                        >节点控制台</a
+                      >
+                      <span v-else>节点控制台</span>
+                    </p>
                   </template>
                 </el-table-column>
               </el-table>
@@ -69,6 +113,7 @@ export default {
         allianceType: 1,
       },
     }).then((rel) => {
+      console.log(rel);
       if (rel.code == 0) {
         this.tableData = rel.data || [];
         this.tableLoading = false;
@@ -136,6 +181,9 @@ export default {
           border-radius: 50%;
           background: #eb5252;
         }
+      }
+      p span {
+        color: #999;
       }
     }
   }
