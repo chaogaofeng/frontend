@@ -34,31 +34,33 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="orgName" label="账号ID">
+                <el-table-column prop="accountId" label="账号ID">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="用户名">
+                <el-table-column prop="name" label="用户名"> </el-table-column>
+                <el-table-column prop="createTime" label="创建时间">
                 </el-table-column>
-                <el-table-column prop="orgEnName" label="创建时间">
-                </el-table-column>
-                <el-table-column prop="orgEnName" label="状态">
-                </el-table-column>
+                <el-table-column prop="status" label="状态"> </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <div class="state">
-                      <span v-if="scope.row.status == 1"
-                        ><i class="el-icon-loading"></i>部署中</span
-                      >
-                      <span v-if="scope.row.status == 2"
-                        ><i class="success"></i>部署成功</span
-                      >
-                      <span v-if="scope.row.status == 3"
-                        ><i class="err"></i>部署失败</span
-                      >
+                      <span class="blue">删除</span>
+                      <span class="blue">更改</span>
+                      <span class="blue">禁用</span>
                     </div>
                   </template>
                 </el-table-column>
               </el-table>
             </template>
+          </div>
+          <div class="pagination" v-if="totalPage != null">
+            <el-pagination
+              :page-size="pageSize"
+              :page-count="totalPage"
+              background
+              @current-change="pageChange"
+              layout="prev, pager, next"
+            >
+            </el-pagination>
           </div>
         </div>
       </div>
@@ -69,6 +71,7 @@
       :visible.sync="createDialogFlag"
       width="500px"
     >
+      <div class="create-title">平台不储存密码，请创建账号前复制并记住密码</div>
       <div class="create-main">
         <el-form
           :model="createForm"
@@ -84,6 +87,7 @@
               class="ipt"
               autocomplete="off"
               clearable
+              placeholder="用户名由6-12位字母数字组成"
             ></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="passwords">
@@ -91,11 +95,15 @@
               type="text"
               v-model="createForm.passwords"
               class="ipt"
+              disabled
               autocomplete="off"
               clearable
             ></el-input>
           </el-form-item>
         </el-form>
+      </div>
+      <div class="create-b">
+        <span @click="createBase64('createForm')">生成并复制密码</span>
       </div>
       <div class="create-bot">
         <el-button type="primary" @click="createSubmit('createForm')"
@@ -112,14 +120,15 @@ import quorumApi from "../../../classa/quorum/api";
 export default {
   data() {
     var validateName = (rule, value, callback) => {
-      // if (value === "") {
-      //   callback(new Error("请输入密码"));
-      // } else {
-      //   if (this.editForm.newpass !== "") {
-      //     this.$refs.editForm.validateField("newpassTwo");
-      //   }
-      //   callback();
-      // }
+      if (
+        /^[a-zA-Z0-9]+$/g.test(value) &&
+        value.length >= 6 &&
+        value.length <= 12
+      ) {
+        callback();
+      } else {
+        callback(new Error("用户名由6-12位字母数字组成"));
+      }
     };
     return {
       id: "",
@@ -136,31 +145,75 @@ export default {
           { required: true, message: "请输入用户名", trigger: "blur" },
           { validator: validateName, trigger: "blur" },
         ],
-        passwords: [{ required: true, trigger: "blur" }],
       },
+      emptyMsg: " ", //空数据提示
+      pageNo: 1, //当前页数
+      pageSize: 10, //每页条数
+      totalPage: null, //总页数
     };
   },
   created() {
-    this.id = this.$route.query.id;
-    this.$http({
-      method: "get",
-      url: `${quorumApi.consortDetaile}/${this.id}`,
-    }).then((rel) => {
-      if (rel.code == 0) {
-        this.data = rel.data.alliance;
-        this.tableData = this.data.orgList || [];
-        this.tableLoading = false;
-      } else {
-        this.$message(rel.msg);
-      }
-    });
+    this.getData();
   },
   methods: {
-    createSubmit(form) {
-      this.createDialogFlag = false;
+    createBase64(form) {
       this.$refs[form].validate((valid) => {
         if (valid) {
-          console.log(1);
+          let Base64 = require("js-base64").Base64;
+          this.createForm.passwords = Base64.encode(this.createForm.userName);
+          this.$copyText(this.createForm.passwords);
+        }
+      });
+    },
+    pageChange(num) {
+      this.pageNo = num;
+      this.getData();
+    },
+    getData() {
+      this.$http({
+        method: "get",
+        url: quorumApi.rpcFirewall,
+      }).then((rel) => {
+        console.log(rel);
+        if (rel.code == 0) {
+          this.tableData = [];
+          if (rel.data.dataList.length > 0) {
+            this.tableData = rel.data.dataList || [];
+            this.totalPage = rel.data.totalPage;
+          } else {
+            this.emptyMsg = "暂无数据";
+            this.totalPage = null;
+          }
+          this.tableLoading = false;
+        }
+      });
+    },
+    createSubmit(form) {
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          if (this.createForm.passwords == "") {
+            this.$message("请生成密码");
+            return;
+          }
+          this.$http({
+            method: "post",
+            url: quorumApi.createRpcAccount,
+            params: {
+              name: this.createForm.userName,
+            },
+          }).then((rel) => {
+            console.log(rel);
+            if (rel.code == 0) {
+              this.$message({
+                message: "创建成功",
+                type: "success",
+              });
+              this.getData();
+              this.createDialogFlag = false;
+            } else {
+              this.$message(rel.msg);
+            }
+          });
         }
       });
     },
@@ -225,27 +278,36 @@ export default {
         i {
           margin-right: 10px;
         }
-        .success {
-          width: 9px;
-          height: 9px;
-          display: inline-block;
-          border-radius: 50%;
-          background: #2cb663;
-        }
-        .err {
-          width: 9px;
-          height: 9px;
-          display: inline-block;
-          border-radius: 50%;
-          background: #eb5252;
+        .blue {
+          color: #108cee;
+          margin-right: 5px;
+          cursor: pointer;
         }
       }
     }
   }
 }
+.create-title {
+  text-align: center;
+  padding-bottom: 30px;
+  font-size: 16px;
+  color: #000;
+}
 .create-bot {
   border-top: 1px solid #eceff8;
   text-align: right;
   padding-top: 20px;
+}
+.create-b {
+  text-align: right;
+  margin-bottom: 20px;
+  span {
+    color: #409eff;
+    cursor: pointer;
+  }
+}
+.pagination {
+  padding: 20px 0 40px;
+  text-align: right;
 }
 </style>

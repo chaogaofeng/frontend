@@ -268,6 +268,7 @@ export default {
       invitId: "",
       invitFlag: false,
       invitError: false,
+      itv: null, //定时器
       invitFrom: {
         phone: "",
       },
@@ -286,11 +287,14 @@ export default {
   created() {
     //获取联盟列表
     this.getData();
-    setInterval(() => {
+    this.itv = setInterval(() => {
       this.getData();
     }, 30000);
     //获取组织
     this.getOrg();
+  },
+  destroyed: function () {
+    clearInterval(this.itv);
   },
   computed: {
     //过滤方法

@@ -38,7 +38,7 @@
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <p><a href="#">API调用</a></p>
-                    <p><a href="#">删除基础库合约</a></p>
+                    <p><a href="#">销毁合约</a></p>
                   </template>
                 </el-table-column>
               </el-table>
@@ -67,7 +67,7 @@
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <p><a href="#">API调用</a></p>
-                    <p><a href="#">删除基础库合约</a></p>
+                    <p><a href="#">销毁合约</a></p>
                   </template>
                 </el-table-column>
               </el-table>
