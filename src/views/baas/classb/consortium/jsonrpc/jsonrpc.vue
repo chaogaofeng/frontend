@@ -355,16 +355,15 @@ export default {
             method: "post",
             url: `${quorumApi.deldateRoles}/${e.id}`,
           }).then((rel) => {
-            console.log(rel);
-            // if (rel.code == 0) {
-            //   this.getData();
-            //   this.$message({
-            //     message: "退出成功",
-            //     type: "success",
-            //   });
-            // } else {
-            //   this.$message(rel.msg);
-            // }
+            if (rel.code == 0) {
+              this.getData();
+              this.$message({
+                message: "删除成功",
+                type: "success",
+              });
+            } else {
+              this.$message(rel.msg);
+            }
           });
         })
         .catch(() => {});
