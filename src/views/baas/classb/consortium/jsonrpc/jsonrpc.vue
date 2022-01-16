@@ -39,13 +39,21 @@
                 <el-table-column prop="name" label="用户名"> </el-table-column>
                 <el-table-column prop="createTime" label="创建时间">
                 </el-table-column>
-                <el-table-column prop="status" label="状态"> </el-table-column>
+                <el-table-column label="状态">
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.status == 1">使用中</span>
+                    <span v-else>已禁用</span>
+                  </template>
+                </el-table-column>
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <div class="state">
-                      <span class="blue">删除</span>
-                      <span class="blue">更改</span>
-                      <span class="blue">禁用</span>
+                      <span class="blue" @click="del(scope.row)">删除</span>
+                      <span class="blue" @click="edit(scope.row)">更改</span>
+                      <span class="blue" @click="editStatus(scope.row)">
+                        <em v-if="scope.row.status == 1">禁用</em>
+                        <em v-else>启用</em>
+                      </span>
                     </div>
                   </template>
                 </el-table-column>
@@ -112,6 +120,35 @@
         <el-button @click="createClose">取消</el-button>
       </div>
     </el-dialog>
+    <!-- 权限更改 -->
+    <el-dialog title="权限配置" :visible.sync="configFlag" width="400px">
+      <div class="radios">
+        <el-table
+          :data="config"
+          :header-cell-style="{
+            background: '#F6F7FB',
+            color: 'rgba(0, 0, 0, 0.85)',
+            borderRight: '1px solid #fff',
+            fontWeight: 'normal',
+          }"
+          style="width: 100%; font-size: 12px"
+        >
+          <el-table-column prop="key" label="授权方法"> </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <div class="ipt">
+                <el-radio v-model="scope.row.val" :label="1">读写</el-radio>
+                <el-radio v-model="scope.row.val" :label="2">只读</el-radio>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div class="create-bot">
+        <el-button type="primary" @click="subConfig">确定</el-button>
+        <el-button @click="createClose">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -131,9 +168,11 @@ export default {
       }
     };
     return {
+      configRadio: true,
       id: "",
       data: {},
       tableLoading: true,
+      config: [], //权限配置
       tableData: [],
       createForm: {
         userName: "",
@@ -150,12 +189,83 @@ export default {
       pageNo: 1, //当前页数
       pageSize: 10, //每页条数
       totalPage: null, //总页数
+      configFlag: false,
+      actData: {}, //当前修改的RPC
     };
   },
   created() {
     this.getData();
   },
   methods: {
+    edit(e) {
+      this.actData = e;
+      this.config = JSON.parse(e.roles);
+      this.configFlag = true;
+    },
+    editStatus(e) {
+      const h = this.$createElement;
+      let alt =
+        e.status == 1
+          ? `确认禁用用户${e.name}吗，禁用后该账号将不能调用JSON-RPC相关方法`
+          : `确认启用用户${e.name}吗，启用后可以使用该账号调用JSON-RPC授权方法`;
+      this.$msgbox({
+        title: " ",
+        message: h("p", { style: "font-size:13px" }, [
+          h("i", {
+            class: "el-icon-warning-outline",
+            style:
+              "color:#d29a1d;font-size:20px;vertical-align: middle;margin-right: 7px;",
+          }),
+          h("span", { style: "color: #666" }, alt),
+        ]),
+        showCancelButton: true,
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+      }).then(() => {
+        this.$http({
+          method: "post",
+          url: quorumApi.updateStatus,
+          data: {
+            id: e.id,
+            status: e.status == 1 ? 2 : 1,
+          },
+        }).then((rel) => {
+          if (rel.code == 0) {
+            let msg = e.status == 1 ? "禁用成功" : "启用成功";
+            this.tableLoading = true;
+            this.getData();
+            this.$message({
+              message: msg,
+              type: "success",
+            });
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      });
+    },
+    subConfig() {
+      this.$http({
+        method: "post",
+        url: quorumApi.updateRoles,
+        data: {
+          roles: this.config,
+          id: this.actData.id,
+        },
+      }).then((rel) => {
+        if (rel.code == 0) {
+          this.tableLoading = true;
+          this.configFlag = false;
+          this.getData();
+          this.$message({
+            message: "更改成功",
+            type: "success",
+          });
+        } else {
+          this.$message(rel.msg);
+        }
+      });
+    },
     createBase64(form) {
       this.$refs[form].validate((valid) => {
         if (valid) {
@@ -174,7 +284,6 @@ export default {
         method: "get",
         url: quorumApi.rpcFirewall,
       }).then((rel) => {
-        console.log(rel);
         if (rel.code == 0) {
           this.tableData = [];
           if (rel.data.dataList.length > 0) {
@@ -198,11 +307,11 @@ export default {
           this.$http({
             method: "post",
             url: quorumApi.createRpcAccount,
-            params: {
+            data: {
               name: this.createForm.userName,
+              pwd: this.createForm.passwords,
             },
           }).then((rel) => {
-            console.log(rel);
             if (rel.code == 0) {
               this.$message({
                 message: "创建成功",
@@ -219,6 +328,46 @@ export default {
     },
     createClose() {
       this.createDialogFlag = false;
+      this.configFlag = false;
+    },
+    del(e) {
+      const h = this.$createElement;
+      this.$msgbox({
+        title: " ",
+        message: h("p", { style: "font-size:13px" }, [
+          h("i", {
+            class: "el-icon-warning-outline",
+            style:
+              "color:#d29a1d;font-size:20px;vertical-align: middle;margin-right: 7px;",
+          }),
+          h(
+            "span",
+            { style: "color: #666" },
+            `确认删除用户${e.name}吗，删除后该账号将不能调用JSON-RPC相关方法`
+          ),
+        ]),
+        showCancelButton: true,
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+      })
+        .then(() => {
+          this.$http({
+            method: "post",
+            url: `${quorumApi.deldateRoles}/${e.id}`,
+          }).then((rel) => {
+            console.log(rel);
+            // if (rel.code == 0) {
+            //   this.getData();
+            //   this.$message({
+            //     message: "退出成功",
+            //     type: "success",
+            //   });
+            // } else {
+            //   this.$message(rel.msg);
+            // }
+          });
+        })
+        .catch(() => {});
     },
   },
 };
@@ -309,5 +458,15 @@ export default {
 .pagination {
   padding: 20px 0 40px;
   text-align: right;
+}
+.radios {
+  margin-bottom: 30px;
+  .ipt {
+    display: flex;
+    align-items: center;
+    ::v-deep .el-radio__label {
+      font-size: 12px;
+    }
+  }
 }
 </style>

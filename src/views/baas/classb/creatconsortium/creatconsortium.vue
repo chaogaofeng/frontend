@@ -146,6 +146,7 @@
                           <el-select
                             v-model="createForm.machvalue"
                             placeholder="请选择"
+                            :disabled="readonly"
                           >
                             <el-option
                               v-for="item in macharr"
@@ -170,6 +171,7 @@
                           v-model="createForm.cycle"
                           :min="1"
                           :max="999"
+                          :disabled="readonly"
                         ></el-input-number>
                       </div>
                     </div>
@@ -555,12 +557,13 @@ export default {
       ipv6: true, //ipv6
       high: "0", //是否豪华配置
       pay_switch: null, //1设置付费，0不设置
+      types: 1, //1初始创建，2加入联盟
     };
   },
   created() {
-    let type = this.$route.query.type;
+    this.types = this.$route.query.type;
     let allianceId = this.$route.query.allianceId;
-    if (type == "join") {
+    if (this.types == 2) {
       this.allianceId = allianceId;
       this.readonly = true;
       this.$http({
@@ -569,10 +572,10 @@ export default {
       }).then((rel) => {
         console.log(rel);
         if (rel.code == 0) {
-          this.data = rel.data.alliance;
-          this.tableData = rel.data.orgList || [];
-          console.log(this.tableData);
-          this.tableLoading = false;
+          this.createForm.name = rel.data.alliance.name;
+          this.createForm.enName = rel.data.alliance.enName;
+          this.createForm.desc = rel.data.alliance.note;
+          this.createForm.cycle = rel.data.alliance.cycle;
         } else {
           this.$message(rel.msg);
         }
@@ -697,7 +700,12 @@ export default {
           } else {
             this.$router.push({
               name: "consortorder",
-              params: { high: this.high, createForm: this.createForm },
+              params: {
+                high: this.high,
+                createForm: this.createForm,
+                types: this.types,
+                allianceId: this.allianceId,
+              },
             });
           }
         }

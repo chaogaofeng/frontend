@@ -10,15 +10,20 @@ const quorumApi = {
   consortDetaile: "/baas/alliance/quorumAlliance/get", //联盟详情
   outConsort: "/baas/org/quorumOrg/exitFromAlliance", //退出联盟
   invitConsort: "/baas/event/eventCenter/inviteAdd2Alliance", //邀请加入联盟
+  addToAlliance: "/baas/org/quorumOrg/addToAlliance", //组织加入联盟
   getEvent: "/baas/event/eventCenter/pageList", //事件列表
   inviteApprove: "/baas/event/eventCenter/inviteApprove", //邀请审批
   applyApprove: "/baas/event/eventCenter/applyApprove", //接受审批
+  eventCenter: "/baas/event/eventCenter/approveFlow", //查看事件审批流
   quorumNode: "/baas/node/chainNode/nodeList", //节点列表
   contractTemp: "/baas/temp/contractTemp/list", //合约模板列表
   contractDeploy: "/baas/deploy/contractDeploy/list", //已部署的合约列表
   contractDeployDetaile: "/baas/deploy/contractDeploy/get", //已部署的合约详情
   createRpcAccount: "/baas/rpc/rpcFirewall/createRpcAccount", //创建 json-rpc 账号
   rpcFirewall: "/baas/rpc/rpcFirewall/pageList", //获取 json-rpc 账号
+  updateRoles: "/baas/rpc/rpcFirewall/updateRoles", //修改 json-rpc 权限
+  deldateRoles: "/baas/rpc/rpcFirewall/delete", //删除 json-rpc 账号
+  updateStatus: "/baas/rpc/rpcFirewall/updateStatus", //修改 json-rpc 状态
   rpcInvoke: "/baas/rpc/rpcInvoke/invoke", //rpc 调用
 };
 export default quorumApi;

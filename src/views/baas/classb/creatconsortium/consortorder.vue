@@ -64,10 +64,14 @@ export default {
     return {
       tableData: [],
       createForm: {},
+      types: 1,
+      allianceId: "",
     };
   },
   created() {
     let high = this.$route.params.high;
+    this.types = this.$route.params.types;
+    this.allianceId = this.$route.params.allianceId;
     this.createForm = this.$route.params.createForm;
     if (high != undefined && high != null && high != "") {
       if (high == 0) {
@@ -117,27 +121,44 @@ export default {
       this.$router.go(-1);
     },
     submit() {
-      this.$http({
-        method: "post",
-        url: quorumApi.addConsort,
-        data: {
-          nodeNum: this.createForm.nodenum,
-          consensus: this.createForm.machvalue,
-          cycle: this.createForm.cycle,
-          enName: this.createForm.enName,
-          name: this.createForm.name,
-          note: this.createForm.desc,
-          orgId: this.createForm.organValue,
-          syncMode: this.createForm.syncMode,
-        },
-      }).then((rel) => {
-        console.log(rel);
-        if (rel.code == 0) {
-          this.$router.push("/quorum/consortsuccess");
-        } else {
-          this.$message(rel.msg);
-        }
-      });
+      if (this.types == 2) {
+        this.$http({
+          method: "post",
+          url: quorumApi.addToAlliance,
+          params: {
+            allianceId: this.allianceId,
+            nodeNum: this.createForm.nodenum,
+            orgId: this.createForm.organValue,
+          },
+        }).then((rel) => {
+          if (rel.code == 0) {
+            this.$router.push("/quorum/consortsuccess");
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      } else {
+        this.$http({
+          method: "post",
+          url: quorumApi.addConsort,
+          data: {
+            nodeNum: this.createForm.nodenum,
+            consensus: this.createForm.machvalue,
+            cycle: this.createForm.cycle,
+            enName: this.createForm.enName,
+            name: this.createForm.name,
+            note: this.createForm.desc,
+            orgId: this.createForm.organValue,
+            syncMode: this.createForm.syncMode,
+          },
+        }).then((rel) => {
+          if (rel.code == 0) {
+            this.$router.push("/quorum/consortsuccess");
+          } else {
+            this.$message(rel.msg);
+          }
+        });
+      }
     },
   },
 };

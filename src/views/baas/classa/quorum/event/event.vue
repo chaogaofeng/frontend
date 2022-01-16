@@ -58,11 +58,22 @@
                 <el-table-column label="操作">
                   <template slot-scope="scope">
                     <div class="handle">
-                      <p>
-                        <span class="blue" @click="look(scope.row)"
-                          >查看审批流</span
-                        >
-                      </p>
+                      <div v-if="scope.row.status == 1">-</div>
+                      <div v-else>
+                        <div v-if="scope.row.canAdd2Alliance == true">
+                          <span class="blue" @click="join(scope.row)"
+                            >加入联盟</span
+                          >
+                          <span class="blue" @click="look(scope.row)"
+                            >查看审批流</span
+                          >
+                        </div>
+                        <div v-else>
+                          <span class="blue" @click="look(scope.row)"
+                            >查看审批流</span
+                          >
+                        </div>
+                      </div>
                     </div>
                   </template>
                 </el-table-column>
@@ -122,22 +133,17 @@
                 <el-table-column label="操作">
                   <template slot-scope="scope">
                     <div class="handle" v-if="scope.row.status == 1">
-                      <p>
-                        <span class="blue" @click="applyApprove(scope.row, 1)"
-                          >接受邀请</span
-                        >
-                      </p>
-                      <p>
-                        <span class="blue" @click="applyApprove(scope.row, 2)"
-                          >拒绝邀请</span
-                        >
-                      </p>
-                    </div>
-                    <div class="handle" v-else>
-                      <div v-if="scope.row.canAdd2Alliance == true">
-                        <span class="blue" @click="join(scope.row)"
-                          >加入联盟</span
-                        >
+                      <div v-if="scope.row.eventFlag == 1">
+                        <p>
+                          <span class="blue" @click="applyApprove(scope.row, 1)"
+                            >接受邀请</span
+                          >
+                        </p>
+                        <p>
+                          <span class="blue" @click="applyApprove(scope.row, 2)"
+                            >拒绝邀请</span
+                          >
+                        </p>
                       </div>
                       <div v-else>
                         <p>
@@ -152,6 +158,13 @@
                           >
                         </p>
                       </div>
+                    </div>
+                    <div class="handle" v-else>
+                      <p>
+                        <span class="blue" @click="look(scope.row)"
+                          >查看审批流</span
+                        >
+                      </p>
                     </div>
                   </template>
                 </el-table-column>
@@ -273,12 +286,26 @@ export default {
       });
     },
     look(e) {
-      console.log(e);
+      this.$http({
+        method: "get",
+        url: quorumApi.eventCenter,
+        params: {
+          eventId: e.id,
+        },
+      }).then((rel) => {
+        if (rel.code == 0) {
+          this.$alert(rel.data.approveName, {
+            confirmButtonText: "确定",
+          });
+        } else {
+          this.$message(rel.msg);
+        }
+      });
     },
     join(e) {
       this.$router.push({
         name: "creatconsortium",
-        query: { type: "join", allianceId: e.allianceId },
+        query: { type: 2, allianceId: e.allianceId },
       });
     },
     checkMenu(type) {
@@ -352,7 +379,6 @@ export default {
           type: 1,
         },
       }).then((rel) => {
-        console.log(rel);
         if (rel.code == 0) {
           if (subType == 1 && eventType == 1) {
             this.applyTable = [];
@@ -495,6 +521,9 @@ export default {
   cursor: pointer;
   .blue {
     color: #108cee;
+  }
+  span {
+    margin-right: 5px;
   }
 }
 .pagination {

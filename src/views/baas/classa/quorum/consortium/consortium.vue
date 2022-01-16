@@ -319,7 +319,6 @@ export default {
           userName: this.search,
         },
       }).then((rel) => {
-        console.log(rel);
         if (rel.code == 0) {
           this.tableData = [];
           if (rel.data.dataList.length > 0) {
@@ -406,7 +405,6 @@ export default {
               allianceId: e.id,
             },
           }).then((rel) => {
-            console.log(rel);
             if (rel.code == 0) {
               this.getData();
               this.$message({
