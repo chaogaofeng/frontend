@@ -98,8 +98,7 @@ const baas = [
                 meta: {
                   requireAuth: true,
                 },
-                component: () =>
-                  import("@/views/baas/fabricPages/league/alianceManagement"),
+                component: () => import("@/views/baas/fabricPages/league/alianceManagement"),
               },
               {
                 path: "memberMg/:leagueId",
@@ -107,8 +106,7 @@ const baas = [
                 meta: {
                   requireAuth: true,
                 },
-                component: () =>
-                  import("@/views/baas/fabricPages/league/alianceMemberManagement"),
+                component: () => import("@/views/baas/fabricPages/league/alianceMemberManagement"),
               },
               {
                 path: "nodeMg/:leagueId",
@@ -116,8 +114,7 @@ const baas = [
                 meta: {
                   requireAuth: true,
                 },
-                component: () =>
-                  import("@/views/baas/fabricPages/league/nodeManagement"),
+                component: () => import("@/views/baas/fabricPages/league/nodeManagement"),
               },
               {
                 path: "channelMg/:leagueId",
@@ -125,8 +122,15 @@ const baas = [
                 meta: {
                   requireAuth: true,
                 },
-                component: () =>
-                  import("@/views/baas/fabricPages/league/channelManagement"),
+                component: () => import("@/views/baas/fabricPages/league/channelManagement"),
+              },
+              {
+                path: "certificateMg/:leagueId",
+                name: "fabricCertificateMg",
+                meta: {
+                  requireAuth: true,
+                },
+                component: () => import("@/views/baas/fabricPages/league/certificateManagement"),
               },
               {
                 path: "eventList",
@@ -276,32 +280,54 @@ const baas = [
         },
         component: () => import("@/views/baas/fabricPages/league/createLeague")
       },
-      /* {
+      {
+        path: "/fabric/consortOrder/:highNum",
+        name: "fabricLeagueOrder",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/order"),
+      },
+      {
+        path: "/fabric/orderSuccess",
+        name: "fabricOrderSuccess",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/orderSuccess"),
+      },
+      {
+        path: "/fabric/diskAdd",
+        name: "fabricDiskAdd",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/diskAdd"),
+      },
+      {
+        path: "/fabric/channelInfo/:channelId",
+        name: "fabricChannelDetail",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/channelDetail")
+      },
+      {
+        path: "/fabric/chainMg/:channelId",
+        name: "fabricChainCode",
+        meta: {
+          requireAuth: true,
+        },
+        component: () => import("@/views/baas/fabricPages/league/chainMg")
+      },
+      {
         path: "baas/fabric/eventList",
         name: "fabricEventToConsortiumList",
         meta: {
           requireAuth: true,
         },
-        component: () => import("@/views/baas/fabricPages/eventHubs"),
-        children: [
-          {
-            path: "consortium",
-            name: "fabricConsortiumEventList",
-            meta: {
-              requireAuth: true,
-            },
-            component: () => import("@/views/baas/fabricPages/eventHubs/eventConsortiumList")
-          },
-          {
-            path: "channel",
-            name: "fabricChannelEventList",
-            meta: {
-              requireAuth: true,
-            },
-            component: () => import("@/views/baas/fabricPages/eventHubs/eventChannelList")
-          }          
-        ]
-      }, */
+        component: () => import("@/views/baas/fabricPages/eventHubs")
+      },
     ],
   },
 ];

@@ -36,7 +36,7 @@
           <el-table-column prop="name" align="left" label="联盟名称" min-width="20%">
             <template slot-scope="scope">
               <div v-if="scope.row.name">
-                <router-link :to="{ name: 'organDetail', params: { orgId: scope.row.id, canDel: !scope.row.consortium } }"><span v-text="scope.row.name"></span></router-link>
+                <router-link :to="{  name: 'fabricConsortiumMg', params: { leagueId: scope.row.id } }"><span v-text="scope.row.name"></span></router-link>
               </div>
               <div v-else>--</div>
             </template>

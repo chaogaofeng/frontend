@@ -48,10 +48,24 @@
   margin-right: 6px;
 }
 
+.in-progess-start {
+  color: #F4B32F;
+  margin-right: 6px;
+}
+
 .show-vertical {
   display: flex;
   flex-flow: column nowrap;
   justify-content: center;
   align-items: flex-start;
   padding-top: 10px;
+}
+
+.custom-message {
+  .el-textarea__inner {
+    width: 100%;
+    font-size: 12px;
+    height: 200px !important;
+    resize: none;
+  }
 }

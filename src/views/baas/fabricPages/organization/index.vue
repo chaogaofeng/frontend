@@ -113,7 +113,7 @@
         </el-form-item>
         <div class="explain">支持小写字母、数字以及-，必须以字母开头，长度1-16</div>
         <el-form-item label="组织描述" prop="desc" style="margin-bottom:10px;">
-          <el-input type="textarea" placeholder="请输入阻止描述" :rows="5" minlength="1" maxlength="200" style="width:380px;" resize="none" v-model="organForm.desc" show-word-limit />
+          <el-input type="textarea" placeholder="请输入组织描述" :rows="5" minlength="1" maxlength="200" style="width:380px;" resize="none" v-model="organForm.desc" show-word-limit />
         </el-form-item>
       </el-form>
       <template slot="footer">

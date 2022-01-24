@@ -23,3 +23,6 @@ pnpm-debug.log*
 *.sw?
 
 yarn.lock
+
+temp/*
+src/assets/test
