@@ -92,6 +92,15 @@ const baas = [
             component: () => import("@/views/baas/classb/organdetaile/detaile"),
           },
           {
+            path: "/quorum/contractdetaile",
+            name: "contractdetaile",
+            meta: {
+              requireAuth: true,
+            },
+            component: () =>
+              import("@/views/baas/classb/contractdetaile/contractdetaile"),
+          },
+          {
             path: "/quorum/creatconsortium",
             name: "creatconsortium",
             meta: {

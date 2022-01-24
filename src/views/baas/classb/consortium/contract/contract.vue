@@ -30,7 +30,12 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="name" label="合约名称">
+                <el-table-column label="合约名称">
+                  <template slot-scope="scope">
+                    <span @click="golist(scope.row)" class="blue">{{
+                      scope.row.name
+                    }}</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="status" label="状态"> </el-table-column>
                 <el-table-column prop="createTime" label="部署时间">
@@ -38,7 +43,9 @@
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <p><a href="#">API调用</a></p>
-                    <p><a href="#">销毁合约</a></p>
+                    <p>
+                      <span @click="del(scope.row)" class="blue">销毁合约</span>
+                    </p>
                   </template>
                 </el-table-column>
               </el-table>
@@ -59,7 +66,12 @@
                 }"
                 style="width: 100%; font-size: 12px"
               >
-                <el-table-column prop="name" label="合约名称">
+                <el-table-column label="合约名称">
+                  <template slot-scope="scope">
+                    <span @click="golist(scope.row)" class="blue">{{
+                      scope.row.name
+                    }}</span>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="status" label="状态"> </el-table-column>
                 <el-table-column prop="createTime" label="部署时间">
@@ -67,7 +79,9 @@
                 <el-table-column prop="state" label="操作">
                   <template slot-scope="scope">
                     <p><a href="#">API调用</a></p>
-                    <p><a href="#">销毁合约</a></p>
+                    <p>
+                      <span @click="del(scope.row)" class="blue">销毁合约</span>
+                    </p>
                   </template>
                 </el-table-column>
               </el-table>
@@ -124,65 +138,83 @@ export default {
   },
   created() {
     this.id = this.$route.query.id;
-    //公有合约
-    this.$http({
-      method: "get",
-      url: quorumApi.contractDeploy,
-      params: {
-        type: this.menu,
-      },
-    }).then((rel) => {
-      console.log(rel);
-      if (rel.code == 0) {
-        this.tableData1 = rel.data || [];
-        this.tableLoading = false;
-      } else {
-        this.$message(rel.msg);
-      }
-    });
+    this.getData();
   },
   methods: {
     back() {
       this.$router.go(-1);
     },
+    golist(e) {
+      this.$router.push({ name: "contractdetaile", query: { id: e.id } });
+    },
+    del(e) {
+      const h = this.$createElement;
+      this.$msgbox({
+        title: " ",
+        message: h("p", { style: "font-size:13px" }, [
+          h("i", {
+            class: "el-icon-warning-outline",
+            style:
+              "color:#d29a1d;font-size:20px;vertical-align: middle;margin-right: 7px;",
+          }),
+          h("span", { style: "color: #666" }, `删除后该合约将不能访问`),
+        ]),
+        showCancelButton: true,
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+      })
+        .then(() => {
+          //退出联盟
+          this.$http({
+            method: "post",
+            url: quorumApi.delContractDeploy,
+            params: {
+              id: e.id,
+            },
+          }).then((rel) => {
+            console.log(rel);
+            if (rel.code == 0) {
+              this.getData();
+              this.$message({
+                message: "合约销毁成功",
+                type: "success",
+              });
+            } else {
+              this.$message(rel.msg);
+            }
+          });
+        })
+        .catch(() => {});
+    },
+    getData() {
+      //合约
+      this.$http({
+        method: "get",
+        url: quorumApi.contractDeploy,
+        params: {
+          type: this.menu,
+          allianceId: this.id,
+        },
+      }).then((rel) => {
+        console.log(rel);
+        if (rel.code == 0) {
+          if (this.menu == 1) {
+            this.tableData1 = rel.data || [];
+          }
+          if (this.menu == 2) {
+            this.tableData2 = rel.data || [];
+          }
+          this.tableLoading = false;
+        } else {
+          this.$message(rel.msg);
+        }
+      });
+    },
     chooseMenu(type) {
       this.menu = type;
       this.tableLoading = true;
-      if (this.menu == 1) {
-        //公有合约
-        this.$http({
-          method: "get",
-          url: quorumApi.contractDeploy,
-          params: {
-            type: this.menu,
-          },
-        }).then((rel) => {
-          console.log(rel);
-          if (rel.code == 0) {
-            this.tableData1 = rel.data || [];
-            this.tableLoading = false;
-          } else {
-            this.$message(rel.msg);
-          }
-        });
-      }
-      if (this.menu == 2) {
-        //私有合约
-        this.$http({
-          method: "get",
-          url: quorumApi.contractDeploy,
-          params: {
-            type: this.menu,
-          },
-        }).then((rel) => {
-          console.log(rel);
-          if (rel.code == 0) {
-            this.tableData2 = rel.data || [];
-            this.tableLoading = false;
-          } else {
-            this.$message(rel.msg);
-          }
-        });
+      if (this.menu == 1 || this.menu == 2) {
+        this.getData();
       }
       if (this.menu == 3) {
         //基础合约
@@ -282,6 +314,9 @@ export default {
           border-radius: 50%;
           background: #eb5252;
         }
+      }
+      .blue {
+        color: #108cee;
       }
     }
   }
