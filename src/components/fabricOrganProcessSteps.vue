@@ -115,7 +115,7 @@ export default {
   created() {},
   methods: {
     triggerCreateOrgan() {
-      this.$parent.createLeagueShowModal();
+      this.$parent.createOrganShowModal();
     }
   },
 };

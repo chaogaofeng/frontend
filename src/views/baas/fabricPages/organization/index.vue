@@ -36,20 +36,26 @@
             </template>
           </el-table-column>
           <el-table-column prop="enName" align="left" label="英文名" min-width="20%" />
-          <el-table-column prop="consortium" align="left" label="所在联盟" min-width="20%" />
-          <el-table-column prop="permission" align="left" width="130" label="组织内权限" />
-          <el-table-column prop="createTime" align="left" label="创建时间" width="180">
+          <el-table-column prop="allianceName" align="left" label="所在联盟" min-width="20%">
             <template slot-scope="scope">
-              <div v-if="scope.row.createTime">
-                <span v-if="msIsString(scope.row.createTime) && scope.row.createTime.includes(':')">scope.row.createTime</span>
-                <span v-else v-text="formatMillisecond2Str(scope.row.createTime)"></span>
+              <div v-if="scope.row.allianceName">
+                <span>scope.row.allianceName</span>
               </div>
               <div v-else>--</div>
             </template>
           </el-table-column>
+          <el-table-column prop="permission" align="left" width="130" label="组织内权限">
+            <template slot-scope="scope">
+              <div v-if="scope.row.permission">
+                <span>scope.row.permission</span>
+              </div>
+              <div v-else>--</div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" align="left" label="创建时间" width="180"></el-table-column>
           <el-table-column label="操作" align="left" class-name="small-padding fixed-width" width="200">
             <template slot-scope="scope">
-              <el-button size="small" v-if="!scope.row.consortium" type="text" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button size="small" v-if="!scope.row.consortium" type="text" @click="handleDelete(scope.row.id)">删除</el-button>
               <el-tooltip v-else class="popper-del-tip" popper-class="tip-msg" effect="light" content="该组织已加入联盟，请先退出联盟后再删除" placement="top">
                 <span class="cmd-btn-disabled">删除</span>
               </el-tooltip>
@@ -81,7 +87,7 @@
         </p>
       </div>
       <template slot="footer">
-        <el-button type="primary" size="small" @click="delCurrentOrgan">确定</el-button>
+        <el-button type="primary" size="small" @click="delCurrentOrgan" :loading="delBtnLoading">确定</el-button>
         <el-button size="small" @click="delOrganModal=false">取消</el-button>
       </template>
     </el-dialog>
@@ -117,7 +123,7 @@
         </el-form-item>
       </el-form>
       <template slot="footer">
-        <el-button type="primary" size="small" @click="addOnetOrgan">确定</el-button>
+        <el-button type="primary" size="small" @click="addOnetOrgan" :loading="addBtnLoading">确定</el-button>
         <el-button size="small" @click="cancelCreateOrgan">取消</el-button>
       </template>
     </el-dialog>
@@ -128,8 +134,7 @@
 <script>
 import FabricOrganWorkflow from "@components/fabricOrganProcessSteps";
 import { XIcon, AlertCircleIcon } from "vue-feather-icons";
-import { isString, dateFormat } from "@utils";
-import { getOrgansOnePage, delOneOrgan } from "@api/fabric/organ";
+import organsList from "@api/fabric/organ";
 
 export default {
   name: "OrganizationList",
@@ -172,34 +177,12 @@ export default {
         pageSize: 10,
       },
       loadingOrganData: false,
-      tableData: [
-        {
-          id: '123',
-          name: '太平运动组织',
-          enName: 'tp-org',
-          consortium: '天平军',
-          permission: 'admin',
-          createTime: 1641373955000 
-        },
-        {
-          id: '124',
-          name: '太平运动组织',
-          enName: 'tp-org',
-          consortium: '',
-          permission: 'admin',
-          createTime: 1641375663602
-        },
-        {
-          id: '125',
-          name: '太平运动组织',
-          enName: 'tp-org',
-          consortium: '',
-          permission: 'admin',
-          createTime: 1641375796601
-        }
-      ],
+      tableData: [],
+      organIdByDel: '',
       delOrganModal: false,
       createOrganModal: false,
+      addBtnLoading: false,
+      delBtnLoading: false,
       organForm: {
         name: '',
         enName: '',
@@ -224,7 +207,7 @@ export default {
     };
   },
   created() {
-    // this.getOrganList(); // TODO
+    this.getOrganList();
   },
   computed: {
     delOrganModalTop: function() {
@@ -238,58 +221,101 @@ export default {
     createOrganShowModal() {
       this.createOrganModal = true;
     },
-    msIsString(str) {
-      return isString(str);
-    },
-    formatMillisecond2Str(ms) {
-      return dateFormat('yyyy-MM-dd hh:mm:ss', new Date(ms));
-    },
-    // 获取后台组织列表数据 TODO
-    async getOrganList(params) {
+    getOrganList() {
       this.loadingOrganData = true;
-      let { items, page_num, page_size, total } = await getOrgansOnePage({ ...params })
-      /* if (items) {
-        this.orderBillLists = items
-        this.page.page_num = page_num
-        this.page.page_size = page_size
-        this.page.page_total = total
-        this.loadingOrganData = false;
-      } */
+      this.$http({
+        method: "get",
+        url: organsList.getOrgansOnePage,
+        params: {
+          pageNo: this.page.currentPage,
+          pageSize: this.page.pageSize
+        }
+      }).then((res) => {
+        if (res.code === 0 && res.success === true) {
+          this.tableData = res.data ? [...res.data.dataList] : [];
+          this.$set(this.page, 'currentPage', res.data.pageNo);
+          this.$set(this.page, 'pageSize', res.data.pageSize);
+          this.$set(this.page, 'total', res.data.totalSize);
+          this.loadingOrganData = false;
+        } else {
+          this.loadingOrganData = false;
+          this.$message(res.msg);
+        }
+      });
     },
-    // 重新加载当前组织列表
     reloadOrganTable() {
-      alert("刷新当前页组织列表！");
-      // this.getOrganList(); TODO
+      this.getOrganList();
     },
-    // 切换第几页
-    handleCurrentChange(page) {
-      this.page.currentPage = page;
-      // this.getOrganList();  TODO
+    handleCurrentChange(pageNo) {
+      this.$set(this.page, 'currentPage', pageNo);
+      this.getOrganList();
     },
-    handleDelete(row) {
+    handleDelete(id) {
+      this.organIdByDel = id;
       this.delOrganModal = true;
     },
-    async delCurrentOrgan() {
-      this.delOrganModal = false;
-      this.$message({
-        type: 'success',
-        message: '删除成功！',
-        center: true,
-        duration: 2600
+    delCurrentOrgan() {
+      let id = this.organIdByDel;
+      this.delBtnLoading = true;
+      this.$http({
+        method: "post",
+        url: organsList.delOneOrgan + id,
+      }).then((res) => {
+        if (res.code === 0 && res.success === true) {
+          this.delOrganModal = false;
+          this.organIdByDel = "";
+          this.$message({
+            type: 'success',
+            message: '删除成功！',
+            center: true,
+            duration: 2600
+          });
+          this.loadingOrganData = true;          
+          setTimeout(() => {
+            this.delBtnLoading = false;
+            this.getOrganList();
+            this.loadingOrganData = false;
+          }, 800)
+        } else {
+          this.delOrganModal = false;
+          this.delBtnLoading = false;
+          this.organIdByDel = "";
+          this.$message(res.msg);
+        }
       });
-      // let { items, page_num, page_size, total } = await delOneOrgan({ ...params }) // TODO
-      setTimeout(() => {
-        // this.getOrganList(); TODO
-      }, 800)
-      
     },
     submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
+      this.$refs[formName].validate(async (valid) => {        
         if (valid) {
-          alert('submit!');
-          // 获取组织列表第一页
-        } else {
-          console.log('error submit!!');
+          this.addBtnLoading = true;
+          this.$http({
+            method: "post",
+            url: organsList.createOneOrgan,
+            data: {
+              name: this.organForm.name,
+              enName: this.organForm.enName,
+              note: this.organForm.desc
+            },
+          }).then((res) => {
+            if (res.code === 0 && res.success === true) {              
+              this.createOrganModal = false;
+              this.loadingOrganData = true;
+              this.$set(this.organForm, 'name', '');
+              this.$set(this.organForm, 'enName', '');
+              this.$set(this.organForm, 'desc', '');              
+              this.getOrganList();
+              this.$message({
+                message: "组织创建成功！",
+                type: "success",
+              });
+              this.addBtnLoading = false;
+              this.loadingOrganData = false;
+            } else {
+              this.addBtnLoading = false;
+              this.$message(res.msg);
+            }
+          });
+        } else {          
           return false;
         }
       });
@@ -302,7 +328,7 @@ export default {
     },
     cancelCreateOrgan() {
       this.resetForm('organForm');
-      this.createOrganModal=false;
+      this.createOrganModal = false;
     }
   },
 };

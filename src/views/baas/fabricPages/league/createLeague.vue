@@ -293,8 +293,11 @@
 
 <script>
 import { getParent } from "@utils";
-import { XIcon, AlertCircleIcon } from "vue-feather-icons";
+import { XIcon } from "vue-feather-icons";
 import { mapState } from "vuex";
+import organsList from "@api/fabric/organ";
+import leagueList from "@api/fabric/league";
+
 export default {
   name: "AddLeague",
   components: {
@@ -469,8 +472,7 @@ export default {
     };
   },
   created() {
-    this.getOrg();
-    this.paySwitch();
+    this.getInitOrgans();
   },
   watch: {
     createForm: {
@@ -487,6 +489,18 @@ export default {
     },
   },
   methods: {
+    getInitOrgans() {
+      this.$http({
+        method: "get",
+        url: organsList.getOrgans,
+      }).then((res) => {
+        if (res.code === 0 && res.success === true) {              
+          this.organListOptions = [...res.data];
+        } else {
+          this.$message(res.msg);
+        }
+      });
+    },
     createOrganShowModal() {
       this.createOrganModal = true;
     },
@@ -540,22 +554,44 @@ export default {
       };
       this.high = 0;
     },
-    paySwitch() {},
-    getOrg() {},
+    getInitOrgans() {},
     createSubmit(form) {},
     submit(form) {
       console.log(this.createForm);
       const _this = this;
       this.$refs[form].validate((valid) => {
         if (valid) {
-          // 跳转到订单确认页面
+          this.$http({
+            method: "post",
+            url: leagueList.createOneLeague,
+            data: {
+              orgId: this.createForm.defaultOrgan,
+              name: this.createForm.leagueName,
+              enName: this.createForm.leagueEnName,
+              note: this.createForm.desc,
+              channelMode: this.createForm.strategy,
+              consensus: this.createForm.machvalue
+            },
+          }).then((res) => {
+            if (res.code === 0 && res.success === true) {
+              this.data = {...res.data.org};
+              this.tableData = [res.data.alliance];
+              this.tableLoading = false;
+              this.loadingCurContainer = false;
+            } else {
+              this.tableLoading = false;
+              this.loadingCurContainer = false;
+              this.$message(res.msg);
+            }
+          });
+        }
+          /* // 跳转到订单确认页面
           _this.$router.push({
             name: 'fabricLeagueOrder',
             params: {
               highNum: this.high
             }
-          });
-        }
+          }); */
       });
     },
   },

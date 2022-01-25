@@ -3,6 +3,7 @@ import { Message } from "element-ui";
 import router from "@/router";
 let http = axios.create({
   baseURL: "http://8.211.163.33:2022",
+  // baseURL: "",
   timeout: 10000,
 });
 

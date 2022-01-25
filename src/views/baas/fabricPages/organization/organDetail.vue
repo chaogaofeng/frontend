@@ -1,14 +1,14 @@
 <template>
-  <div id="main">
+  <div id="main" v-loading="loadingCurContainer">
     <div class="page">
       <div class="page-main">
         <div class="instance-info">
           <div class="back" @click="back">
             <i class="el-icon-arrow-left"></i>
           </div>
-          <h2 class="headline">{{ data.orgName }}</h2>
+          <h2 class="headline">{{ data.name }}</h2>
           <div class="del">
-            <el-button size="small" v-if="this.$route.params.canDel" type="primary" plain @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="small" v-if="isNullByVue(data.joinTime)" type="primary" plain @click="handleDelete">删除</el-button>
             <el-tooltip v-else class="popper-del-tip" popper-class="tip-msg" effect="light" content="该组织已加入联盟，请先退出联盟后再删除" placement="top">
               <span class="cmd-btn-disabled has-bg">删除</span>
             </el-tooltip>
@@ -18,9 +18,9 @@
         <div class="info-content">
           <el-row :gutter="20">
             <el-col :span="6"><label>英文名：<span>{{ data.enName }}</span></label></el-col>
-            <el-col :span="6"><label style="margin-left: 15px">创建时间：<span>{{ formatTime(data.createTime) }}</span></label></el-col>
-            <el-col :span="6"><div class="grid-content bg-purple">是否加入联盟：<span>{{ $route.params.canDel ? '否' : '是' }}</span></div></el-col>
-            <el-col :span="6"><label style="margin-left: 15px">组织描述：<span>{{ data.desc }}</span></label></el-col>
+            <el-col :span="6"><label style="margin-left: 15px">创建时间：<span>{{ data.createTime }}</span></label></el-col>
+            <el-col :span="6"><div class="grid-content bg-purple">是否加入联盟：<span>{{ data.joinTime === null ?  '否' : '是'}}</span></div></el-col>
+            <el-col :span="6"><label style="margin-left: 15px">组织描述：<span>{{ data.note }}</span></label></el-col>
           </el-row>
         </div>
         <div class="detail-content">
@@ -34,7 +34,7 @@
                 <template>
                   <el-table
                     v-loading="tableLoading"
-                    :data="$route.params.canDel ? []: tableData"
+                    :data="tableData"
                     :border="false"
                     style="width:100%;font-size:12px;"
                     header-cell-class-name="table-header"          
@@ -46,16 +46,35 @@
                     }"
                   >
                     <el-table-column prop="name" label="联盟名称">
-                    </el-table-column>
-                    <el-table-column prop="enName" label="英文名">
-                    </el-table-column>
-                    <el-table-column prop="state" label="联盟状态">
                       <template slot-scope="scope">
-                        <div v-if="scope.row.state === '失败'"><font-awesome-icon class="red-round" :icon="['fas', 'circle']" />{{ scope.row.state }}</div>
-                        <div v-else><font-awesome-icon class="green-round" :icon="['fas', 'circle']" />{{ scope.row.state }}</div>
+                        <div v-if="scope.row.name">
+                          <span>scope.row.name</span>
+                        </div>
+                        <div v-else>-</div>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="member" label="联盟成员">
+                    <el-table-column prop="enName" label="英文名">
+                      <template slot-scope="scope">
+                        <div v-if="scope.row.enName">
+                          <span>scope.row.enName</span>
+                        </div>
+                        <div v-else>-</div>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="联盟状态">
+                      <template slot-scope="scope">
+                        <div v-if="scope.row.status === '失败'"><font-awesome-icon class="red-round" :icon="['fas', 'circle']" />{{ scope.row.status }}</div>
+                        <div v-else-if="scope.row.status === '成功'"><font-awesome-icon class="green-round" :icon="['fas', 'circle']" />{{ scope.row.status }}</div>
+                        <div v-else>-</div>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="members" label="联盟成员">
+                      <template slot-scope="scope">
+                        <div v-if="scope.row.members">
+                          <span>scope.row.members</span>
+                        </div>
+                        <div v-else>-</div>
+                      </template>                     
                     </el-table-column>
                   </el-table>
                 </template>
@@ -65,48 +84,115 @@
         </div>
       </div>
     </div>
+    <!-- start 删除组织的对话框 -->
+    <el-dialog
+      :visible.sync="delOrganModal"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+      :show-close="false"
+      id="delOrganDialog"
+      center
+      width="400px"
+      :top="delOrganModalTop"
+    >
+      <template slot="title">
+        <h3 style="text-align:left;">组织未加入联盟</h3>
+        <x-icon size="16" class="close-ico" @click="delOrganModal=false"></x-icon>
+      </template>
+      <div class="tip-del-organ">
+        <alert-circle-icon size="24" class="warning-ico"></alert-circle-icon>
+        <p>
+          该组织没有加入任何联盟,<br />确认是否删除该组织?
+        </p>
+      </div>
+      <template slot="footer">
+        <el-button type="primary" size="small" @click="delCurrentOrgan" :loading="delBtnLoading">确定</el-button>
+        <el-button size="small" @click="delOrganModal=false">取消</el-button>
+      </template>
+    </el-dialog>
+    <!-- 删除组织的对话框 end -->
   </div>
 </template>
 
 <script>
-import { dateFormat } from "@utils";
-import { getOneOrganDetail } from "@api/fabric/organ";
+import { XIcon, AlertCircleIcon } from "vue-feather-icons";
+import organsList from "@api/fabric/organ";
+import { isNull } from "@utils";
 
 export default {
+  name: 'organDetail',
+  components: {
+    XIcon,
+    AlertCircleIcon
+  },
   data() {
     return {
-      id: "",
-      data: {
-        orgName: "太平运动组织",
-        enName: 'org0',
-        createTime: 1641373955000,
-        desc: '123'
-      },
+      delOrganModal: false,
+      delBtnLoading: false,
+      loadingCurContainer: true,
+      data: {},
       tableLoading: false,
-      tableData: [
-        {
-          name: '太平军',
-          enName: 'tpj',
-          state: '失败',
-          member: '太平运动组织'
-        }
-      ],
+      tableData: [],
     };
   },
   created() {
-    this.id = this.$route.params.orgId;
-    this.getOrganDetail(this.id);
+    this.getOrganDetail(this.$route.params.orgId);
+  },
+  computed: {
+    delOrganModalTop: function() {
+      return "calc(50vh - 108px)";
+    }
   },
   methods: {
+    isNullByVue(val) {
+      return isNull(val);
+    },
     back() {
       this.$router.go(-1);
     },
-    formatTime(ms) {
-      return dateFormat('yyyy-MM-dd hh:mm:ss', new Date(ms));
-    },
-    // TODO 获取组织的详情
     getOrganDetail(orgId) {
-      // getOneOrganDetail(orgId)
+      this.$http({
+        method: "get",
+        url: organsList.getOneOrganDetail + orgId,
+      }).then((res) => {
+        if (res.code === 0 && res.success === true) {
+          this.data = {...res.data.org};
+          this.tableData = [res.data.alliance];
+          this.tableLoading = false;
+          this.loadingCurContainer = false;
+        } else {
+          this.tableLoading = false;
+          this.loadingCurContainer = false;
+          this.$message(res.msg);
+        }
+      });
+    },
+    handleDelete() {      
+      this.delOrganModal = true;
+    },
+    delCurrentOrgan() {
+      this.delBtnLoading = true;
+      this.$http({
+        method: "post",
+        url: organsList.delOneOrgan + this.$route.params.orgId,
+      }).then((res) => {
+        if (res.code === 0 && res.success === true) {
+          this.delOrganModal = false;
+          this.$message({
+            type: 'success',
+            message: '删除成功！',
+            center: true,
+            duration: 2600
+          });         
+          setTimeout(() => {            
+            this.$router.go(-1);
+          }, 800)
+        } else {
+          this.delOrganModal = false;
+          this.delBtnLoading = false;
+          this.$message(res.msg);
+        }
+      });
     }
   },
 };
@@ -190,6 +276,49 @@ export default {
         }
       }
     }
+  }
+}
+::v-deep .el-dialog--center {
+  .el-dialog__header {
+    padding: 10px 15px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f6f7fb;
+    h3 {
+      color: #333;
+      font-weight: normal;
+    }
+    .close-ico {
+      cursor: pointer;
+      color: #333;
+    }
+  }
+  .tip-del-organ {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 5px 5px 0;
+    .warning-ico {
+      width: 24px;
+      height: 30px;
+      color: #F4B329;
+    }
+    p {
+      padding-left: 26px;
+      display: inline-block;
+      height: 60px;
+      line-height: 30px;
+      font-size: 14px;
+      color: #666;
+    }
+  }
+  .el-dialog__footer {
+    border-top: 1px solid #eceff8;
+    padding: 12px 30px 12px 0;
+    text-align: right;
   }
 }
 </style>
