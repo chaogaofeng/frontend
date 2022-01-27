@@ -2,6 +2,8 @@ import axios from "axios";
 import { Message } from "element-ui";
 import router from "@/router";
 let http = axios.create({
+  // baseURL: "http://8.211.163.33:2022",
+  baseURL: "http://192.168.0.92:2022",
   //baseURL: "http://8.211.163.33:2022",
   baseURL: "http://192.168.0.92:2022",
   // baseURL: "",
