@@ -25,11 +25,11 @@
                   >
                     <el-option
                       v-for="(organItem,index) in organListOptions"
-                      :key="index + '-' + organItem.value"
-                      :label="organItem.label"
-                      :value="organItem.value"
-                    >
-                      <span style="font-size: 12px">{{ organItem.label }}</span>
+                      :key="index + '-' + organItem.name"
+                      :label="organItem.name"
+                      :value="organItem.id"
+                    >                  
+                      <span style="font-size: 12px">{{ organItem.name }}</span>
                     </el-option>                    
                     <div class="creat-organ">
                       <el-button type="text" icon="el-icon-plus" @click="createOrgan">新建组织</el-button>
@@ -472,6 +472,7 @@ export default {
     };
   },
   created() {
+    console.log(" - created -");
     this.getInitOrgans();
   },
   watch: {
@@ -496,6 +497,7 @@ export default {
       }).then((res) => {
         if (res.code === 0 && res.success === true) {              
           this.organListOptions = [...res.data];
+          console.log(this.organListOptions);
         } else {
           this.$message(res.msg);
         }
@@ -554,13 +556,15 @@ export default {
       };
       this.high = 0;
     },
-    getInitOrgans() {},
+    // getInitOrgans() {},
     createSubmit(form) {},
     submit(form) {
       console.log(this.createForm);
       const _this = this;
       this.$refs[form].validate((valid) => {
         if (valid) {
+          console.log("=====================");
+          console.log(this.createForm.defaultOrgan);
           this.$http({
             method: "post",
             url: leagueList.createOneLeague,
@@ -573,6 +577,7 @@ export default {
               consensus: this.createForm.machvalue
             },
           }).then((res) => {
+            console.log(res.code);
             if (res.code === 0 && res.success === true) {
               this.data = {...res.data.org};
               this.tableData = [res.data.alliance];
@@ -585,13 +590,13 @@ export default {
             }
           });
         }
-          /* // 跳转到订单确认页面
-          _this.$router.push({
+        // 跳转到订单确认页面
+        _this.$router.push({
             name: 'fabricLeagueOrder',
             params: {
               highNum: this.high
             }
-          }); */
+          });
       });
     },
   },

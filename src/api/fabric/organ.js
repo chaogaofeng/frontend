@@ -1,4 +1,4 @@
-const fabricPrefix = "/fabricApi";
+const fabricPrefix = "";
 const organsList = {
   "createOneOrgan": fabricPrefix + "/baas/org/fabricOrg/add",
   "getOrgansOnePage": fabricPrefix + "/baas/org/fabricOrg/pageList",

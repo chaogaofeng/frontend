@@ -1,4 +1,4 @@
-const fabricPrefix = "/fabricApi";
+const fabricPrefix = "";
 const leagueList = {
   "createOneLeague": fabricPrefix + "/baas/alliance/fabricAlliance/add",  
   "delOneLeague": fabricPrefix + "/baas/alliance/fabricAlliance/delete/",

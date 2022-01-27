@@ -288,6 +288,7 @@ export default {
       this.$refs[formName].validate(async (valid) => {        
         if (valid) {
           this.addBtnLoading = true;
+          console.log("=======================");
           this.$http({
             method: "post",
             url: organsList.createOneOrgan,

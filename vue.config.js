@@ -19,12 +19,13 @@ module.exports = {
     port: 3000,
     proxy: {
       "/api": {
-        target: "http://8.211.163.33:2022",
+        //target: "http://8.211.163.33:2022",
+        target: "http://192.168.0.92:2022",
         pathRewrite: { "^/api": "" },
       },
       "/fabricApi": {
-        // target: "http://192.168.0.92:2022",
-        target: "http://8.211.163.33:2022",
+        target: "http://192.168.0.92:2022",
+        // target: "http://8.211.163.33:2022",
         pathRewrite: { "^/fabricApi": "" },
       },
     },
